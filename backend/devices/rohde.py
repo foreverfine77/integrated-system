@@ -289,6 +289,13 @@ class RohdeZNA26(NetworkAnalyzerBase):
             # 罗德ZNA26使用正确的指令格式（参考用户提供的权威指令）
             if param in ['S11', 'S21', 'S12', 'S22']:
                 print(f"[SCPI] 配置S参数测量")
+
+                # 确保设备处于标准测量模式（如果之前测量了SC参数）
+                print(f"
+[SCPI] 恢复标准测量模式")
+                print(f"  >> SENSe1:FREQuency:CONVersion FUND (基频模式)")
+                self.write("SENSe1:FREQuency:CONVersion FUND")
+
                 trc_name = f"Trc_{param}"
                 cmd1 = f':CALC1:PAR:SDEF "{trc_name}", "{param}"'
                 print(f"  >> {cmd1}")
