@@ -387,7 +387,7 @@ class RohdeZNA26(NetworkAnalyzerBase):
             cmd_count = f"SENS:SWE:COUNt {measurement_count}"
             print(f"\n[SCPI] 设置测量次数")
             print(f"  >> {cmd_count}")
-            print(f"  [说明] VNA将自动进行{measurement_count}次测量并平均")
+            if measurement_count == 1:`n                print(f"  [说明] 单次测量（软件循环模式）")`n            else:`n                print(f"  [说明] VNA将自动进行{measurement_count}次测量并平均")
             self.write(cmd_count)
             
             # 触发测量
@@ -421,6 +421,13 @@ class RohdeZNA26(NetworkAnalyzerBase):
             print(f"  << 收到: {len(data_str)} 字节数据")
             data = [float(x) for x in data_str.split(',') if x.strip()]
             print(f"  [解析] 解析到 {len(data)} 个数值")
+            
+            # 数据完整性检查
+            if param not in ['IPWR', 'OPWR', 'REVIPWR', 'REVOPWR']:
+                expected_count = len(frequencies) * 2  # S参数需要实部+虚部
+                if len(data) != expected_count:
+                    print(f"  [警告] 数据不完整！期望{expected_count}个数值，实际{len(data)}个")
+                    print(f"  [警告] 可能TCP缓冲区不足或数据被截断")
             
             # 根据参数类型解析数据
             if param in ['IPWR', 'OPWR', 'REVIPWR', 'REVOPWR']:
