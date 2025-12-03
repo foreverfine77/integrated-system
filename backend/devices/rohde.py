@@ -337,6 +337,12 @@ class RohdeZNA26(NetworkAnalyzerBase):
                 
             elif param in ['IPWR', 'OPWR', 'REVIPWR', 'REVOPWR']:
                 print(f"[SCPI] 配置功率测量（绝对波量）")
+                
+                # 确保设备处于标准测量模式（退出VMIX模式）
+                print(f"\n[SCPI] 恢复标准测量模式")
+                print(f"  >> SENSe1:FREQuency:CONVersion FUND (基频模式)")
+                self.write("SENSe1:FREQuency:CONVersion FUND")
+                
                 # 功率参数用波名称：a1, b2, a2, b1
                 wave_map = {
                     'IPWR': 'a1',      # 端口1参考波

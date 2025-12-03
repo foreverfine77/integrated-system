@@ -397,11 +397,12 @@ class VNAController:
             logger.info(f"打开结果文件夹: {abs_folder_path}")
             
             if system == "Windows":
-                subprocess.run(['explorer', abs_folder_path], check=True)
+                # Windows explorer 有时会返回非零退出码，即使成功打开
+                subprocess.run(['explorer', abs_folder_path])
             elif system == "Darwin":  # macOS
-                subprocess.run(['open', abs_folder_path], check=True)
+                subprocess.run(['open', abs_folder_path])
             else:  # Linux
-                subprocess.run(['xdg-open', abs_folder_path], check=True)
+                subprocess.run(['xdg-open', abs_folder_path])
             
             return jsonify({
                 'success': True,

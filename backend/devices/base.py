@@ -279,27 +279,32 @@ class NetworkAnalyzerBase(ABC):
             try:
                 self.tcp_socket.send(command.encode('utf-8'))
                 
-                # 接收数据，可能需要多次接收
+                # 接收数据，可能需要多次接收（增大缓冲区并改进接收逻辑）
                 response_parts = []
-                response_bytes = []  # 保存原始字节数据
+                total_bytes = 0
+                max_chunks = 100  # 最多接收100个chunk（防止无限循环）
+                chunk_count = 0
                 
-                while True:
+                # 设置一个较短的超时用于检测数据接收完成
+                self.tcp_socket.settimeout(0.5)
+                
+                while chunk_count < max_chunks:
                     try:
-                        chunk_bytes = self.tcp_socket.recv(65536)
+                        # 使用更大的缓冲区（256KB）
+                        chunk_bytes = self.tcp_socket.recv(262144)
                         if not chunk_bytes:
                             break
                         
-                        response_bytes.append(chunk_bytes)
+                        total_bytes += len(chunk_bytes)
+                        chunk_count += 1
                         
                         # 尝试多种编码方式解码
-                        # 优先尝试 UTF-8，如果失败则尝试 GBK（中文设备常用）
                         try:
                             chunk = chunk_bytes.decode('utf-8')
                         except UnicodeDecodeError:
                             try:
                                 chunk = chunk_bytes.decode('gbk')
                             except UnicodeDecodeError:
-                                # 如果都失败，使用 latin-1（不会失败但可能乱码）
                                 chunk = chunk_bytes.decode('latin-1')
                         
                         response_parts.append(chunk)
@@ -309,13 +314,23 @@ class NetworkAnalyzerBase(ABC):
                             break
                             
                     except socket.timeout:
-                        # 超时，可能数据已经接收完毕
+                        # 超时，检查是否已经接收到数据
                         if response_parts:
+                            # 已接收到数据，认为接收完成
                             break
-                        else:
+                        elif chunk_count == 0:
+                            # 第一个chunk就超时，真正的超时错误
                             raise TimeoutError("等待设备响应超时")
+                        else:
+                            # 中间超时，可能数据已接收完毕
+                            break
                 
                 response = ''.join(response_parts).strip()
+                
+                # 记录接收的数据量
+                if total_bytes > 10000:
+                    logger.debug(f"接收大数据: {total_bytes} 字节, {chunk_count} 个chunk")
+                
                 return response
             finally:
                 # 恢复原始超时设置

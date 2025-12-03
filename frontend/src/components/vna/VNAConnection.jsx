@@ -284,19 +284,13 @@ function VNAConnection({ selectedDevice, onDeviceSelect, onConnectionChange, add
                             <span>{isLoading ? '连接中...' : '连接设备'}</span>
                         </button>
                     ) : (
-                        <div className="space-y-2">
-                            <div className="flex items-center justify-center space-x-2 py-2 px-4 bg-emerald-50 border border-emerald-200 rounded-md text-emerald-700">
-                                <Check className="h-5 w-5" />
-                                <span className="font-medium">已连接</span>
-                            </div>
-                            <button
-                                onClick={handleDisconnect}
-                                className="w-full bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-md transition-colors flex items-center justify-center space-x-2"
-                            >
-                                <Power className="h-4 w-4" />
-                                <span>断开连接</span>
-                            </button>
-                        </div>
+                        <button
+                            onClick={handleDisconnect}
+                            className="w-full bg-red-600 hover:bg-red-700 text-white font-medium py-2.5 px-4 rounded-md transition-colors flex items-center justify-center space-x-2"
+                        >
+                            <Power className="h-4 w-4" />
+                            <span>断开连接</span>
+                        </button>
                     )}
                 </div>
 
