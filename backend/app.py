@@ -162,7 +162,7 @@ def clear_vna_connection_history():
 
 @app.route('/api/vna/mixer-config', methods=['GET'])
 def get_mixer_config():
-    \"\"\"获取混频器配置\"\"\"
+    """获取混频器配置"""
     try:
         return jsonify({
             'success': True,
@@ -174,7 +174,7 @@ def get_mixer_config():
 
 @app.route('/api/vna/mixer-config', methods=['POST'])
 def set_mixer_config():
-    \"\"\"设置混频器配置\"\"\"
+    """设置混频器配置"""
     try:
         data = request.json
         

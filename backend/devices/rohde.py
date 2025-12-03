@@ -93,11 +93,10 @@ class RohdeZNA26(NetworkAnalyzerBase):
         - 配置转换模式（DC-UP：下变频，上边带）
         - 设置端口衰减
         """
+        try:`r`n            # 默认配置（如果未传入）
         try:
-        # 默认配置（如果未传入）
-        if config is None:
-            config = {
-                'rfPort': 1,
+            # 默认配置（如果未传入）
+            if config is None:
                 'ifPort': 2,
                 'loPort': 3,
                 'loFrequency': 300.0,
