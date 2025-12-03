@@ -13,9 +13,9 @@ function VNAConnection({ selectedDevice, onDeviceSelect, onConnectionChange, add
     const [isLoading, setIsLoading] = useState(false)
 
     // 连接配置
-    const [ipAddress, setIpAddress] = useState('192.168.1.100')
+    const [ipAddress, setIpAddress] = useState('169.254.143.122')
     const [port, setPort] = useState('5025')
-    const [selectedDeviceType, setSelectedDeviceType] = useState('siyi-3674l')
+    const [selectedDeviceType, setSelectedDeviceType] = useState('rohde-zna26')
 
     // 历史IP地址管理
     const [ipHistory, setIpHistory] = useState([])
@@ -219,7 +219,7 @@ function VNAConnection({ selectedDevice, onDeviceSelect, onConnectionChange, add
                         onChange={(e) => setIpAddress(e.target.value)}
                         disabled={isConnected}
                         className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:bg-slate-100"
-                        placeholder="192.168.1.100"
+                        placeholder="169.254.143.122"
                     />
 
                     {/* 历史IP下拉列表 */}
