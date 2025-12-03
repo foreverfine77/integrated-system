@@ -1,0 +1,59 @@
+/* 全局深色模式样式覆盖 */
+
+/* 输入框和选择框深色样式 */
+input, select, textarea {
+  @apply dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:placeholder-gray-400;
+}
+
+input:disabled, select:disabled, textarea:disabled {
+  @apply dark:bg-gray-600 dark:text-gray-500;
+}
+
+input:focus, select:focus, textarea:focus {
+  @apply dark:ring-blue-400 dark:border-blue-400;
+}
+
+/* 文字颜色覆盖 */
+h1, h2, h3, h4, h5, h6 {
+  @apply dark:text-gray-100;
+}
+
+/* label 文字 */
+label {
+  @apply dark:text-gray-300;
+}
+
+/* 小号提示文字 */
+.text-gray-500 {
+  @apply dark:text-gray-400;
+}
+
+.text-gray-600 {
+  @apply dark:text-gray-400;
+}
+
+.text-gray-700 {
+  @apply dark:text-gray-300;
+}
+
+.text-gray-900 {
+  @apply dark:text-gray-100;
+}
+
+/* 按钮样式 */
+.bg-gray-100 {
+  @apply dark:bg-gray-700 dark:hover:bg-gray-600;
+}
+
+.bg-gray-50 {
+  @apply dark:bg-gray-700;
+}
+
+/* 悬停效果 */
+.hover\\:bg-gray-100:hover {
+  @apply dark:hover:bg-gray-700;
+}
+
+.hover\\:bg-gray-200:hover {
+  @apply dark:hover:bg-gray-600;
+}
