@@ -82,7 +82,7 @@ class RohdeZNA26(NetworkAnalyzerBase):
             print(f"{'='*70}\n")
             # 即使初始化失败也继续，因为某些命令可能不支持
     
-    def _configure_vmix_mode(self):
+    def _configure_vmix_mode(self, config=None):
         """配置VMIX混频器测量模式
         
         根据用户提供的ZNA26实机测量指令序列配置混频器模式。
@@ -94,6 +94,17 @@ class RohdeZNA26(NetworkAnalyzerBase):
         - 设置端口衰减
         """
         try:
+        # 默认配置（如果未传入）
+        if config is None:
+            config = {
+                'rfPort': 1,
+                'ifPort': 2,
+                'loPort': 3,
+                'loFrequency': 300.0,
+                'loPower': 10.0,
+                'conversionMode': 'DCUP'
+            }
+        
             print(f"\n{'='*70}")
             print(f"[罗德ZNA26] 配置VMIX混频器测量模式")
             print(f"{'='*70}\n")
@@ -125,13 +136,13 @@ class RohdeZNA26(NetworkAnalyzerBase):
             self.write("SENSe1:FREQuency:CONVersion:MIXer:STAGes 1")
             
             print(f"  >> SENSe1:FREQuency:CONVersion:MIXer:RFPort 1")
-            self.write("SENSe1:FREQuency:CONVersion:MIXer:RFPort 1")
+            self.write(f"SENSe1:FREQuency:CONVersion:MIXer:RFPort {config[\'rfPort\']}")
             
             print(f"  >> SENSe1:FREQuency:CONVersion:MIXer:IFPort 2")
-            self.write("SENSe1:FREQuency:CONVersion:MIXer:IFPort 2")
+            self.write(f"SENSe1:FREQuency:CONVersion:MIXer:IFPort {config[\'ifPort\']}")
             
             print(f"  >> SENSe1:FREQuency:CONVersion:MIXer:LOPort1 PORT, 3")
-            self.write("SENSe1:FREQuency:CONVersion:MIXer:LOPort1 PORT, 3")
+            self.write(f"SENSe1:FREQuency:CONVersion:MIXer:LOPort1 PORT, {config[\'loPort\']}")
             
             # 配置倍频器
             print(f"\n[SCPI] 配置倍频器（基频工作）")
@@ -150,7 +161,8 @@ class RohdeZNA26(NetworkAnalyzerBase):
             self.write("SENSe1:FREQuency:CONVersion:MIXer:FIXed1 LO1")
             
             print(f"  >> SENSe1:FREQuency:CONVersion:MIXer:MFFixed LO1, 300000000.0")
-            self.write("SENSe1:FREQuency:CONVersion:MIXer:MFFixed LO1, 300000000.0")
+            lo_freq_hz = config[\'loFrequency\'] * 1e6
+            self.write(f"SENSe1:FREQuency:CONVersion:MIXer:MFFixed LO1, {lo_freq_hz}")
             
             # 配置功率模式
             print(f"\n[SCPI] 配置各端口功率模式")
@@ -164,12 +176,12 @@ class RohdeZNA26(NetworkAnalyzerBase):
             self.write("SOURce1:FREQuency:CONVersion:MIXer:PMODe IF, FUND")
             
             print(f"  >> SOURce1:FREQuency:CONVersion:MIXer:PMFixed LO1, 10.0 (LO功率10dBm)")
-            self.write("SOURce1:FREQuency:CONVersion:MIXer:PMFixed LO1, 10.0")
+            self.write(f"SOURce1:FREQuency:CONVersion:MIXer:PMFixed LO1, {config[\'loPower\']}")
             
             # 配置转换频率模式
             print(f"\n[SCPI] 配置转换频率 (DC-UP: 下变频上边带)")
             print(f"  >> SENSe1:FREQuency:CONVersion:MIXer:TFrequency1 DCUP")
-            self.write("SENSe1:FREQuency:CONVersion:MIXer:TFrequency1 DCUP")
+            self.write(f"SENSe1:FREQuency:CONVersion:MIXer:TFrequency1 {config[\'conversionMode\']}")
             
             print(f"  >> SENSe1:FREQuency:CONVersion MIX")
             self.write("SENSe1:FREQuency:CONVersion MIX")

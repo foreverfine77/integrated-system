@@ -94,6 +94,12 @@ export const vnaAPI = {
     exportData: (results) => apiClient.post('/api/vna/export-data', { results }, {
         responseType: 'blob'
     }),
+
+    // 获取混频器配置
+    getMixerConfig: () => apiClient.get('/api/vna/mixer-config'),
+
+    // 设置混频器配置
+    setMixerConfig: (config) => apiClient.post('/api/vna/mixer-config', config),
 }
 
 /**

@@ -160,6 +160,58 @@ def clear_vna_connection_history():
     """清除VNA所有历史连接记录"""
     return vna_controller.clear_connection_history()
 
+@app.route('/api/vna/mixer-config', methods=['GET'])
+def get_mixer_config():
+    \"\"\"获取混频器配置\"\"\"
+    try:
+        return jsonify({
+            'success': True,
+            'config': vna_controller.mixer_config
+        })
+    except Exception as e:
+        logger.error(f"获取混频器配置失败: {str(e)}")
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/api/vna/mixer-config', methods=['POST'])
+def set_mixer_config():
+    \"\"\"设置混频器配置\"\"\"
+    try:
+        data = request.json
+        
+        # 参数验证
+        errors = []
+        
+        # 端口验证
+        ports = [data.get('rfPort'), data.get('ifPort'), data.get('loPort')]
+        if len(set(ports)) != len(ports):
+            errors.append('端口不能重复')
+        
+        # LO频率验证 (10 MHz - 26.5 GHz)
+        lo_freq = data.get('loFrequency', 0)
+        if not (10 <= lo_freq <= 26500):
+            errors.append('LO频率范围: 10-26500 MHz')
+        
+        # LO功率验证
+        lo_power = data.get('loPower', 0)
+        if not (-30 <= lo_power <= 10):
+            errors.append('LO功率范围: -30 至 +10 dBm')
+        
+        if errors:
+            return jsonify({'success': False, 'errors': errors}), 400
+        
+        # 更新配置
+        vna_controller.mixer_config.update(data)
+        logger.info(f"混频器配置已更新: {vna_controller.mixer_config}")
+        
+        return jsonify({
+            'success': True,
+            'message': '混频器配置已更新',
+            'config': vna_controller.mixer_config
+        })
+    except Exception as e:
+        logger.error(f"设置混频器配置失败: {str(e)}")
+        return jsonify({'success': False, 'message': str(e)}), 500
+
 # ==================== 系统健康检查 ====================
 
 @app.route('/api/health', methods=['GET'])

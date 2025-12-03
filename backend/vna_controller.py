@@ -61,6 +61,16 @@ class VNAController:
             'results': []
         }
         
+        # 混频器配置（用于ZNA26的VMIX模式）
+        self.mixer_config = {
+            'rfPort': 1,
+            'ifPort': 2,
+            'loPort': 3,
+            'loFrequency': 300.0,  # MHz
+            'loPower': 10.0,       # dBm
+            'conversionMode': 'DCUP'
+        }
+        
         # 创建结果目录
         os.makedirs('results', exist_ok=True)
     
