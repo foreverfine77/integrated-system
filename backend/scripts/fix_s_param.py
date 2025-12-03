@@ -21,6 +21,6 @@ content_new = re.sub(pattern, replacement, content)
 if content != content_new:
     with open('backend/devices/rohde.py', 'w', encoding='utf-8') as f:
         f.write(content_new)
-    print("✅ 修改成功！")
+    print("[OK] 修改成功！")
 else:
-    print("❌ 未找到匹配的代码")
+    print("[FAIL] 未找到匹配的代码")
