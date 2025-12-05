@@ -1,7 +1,7 @@
 # 临时脚本：在S参数测量前添加FUND模式恢复
 import re
 
-with open('backend/devices/rohde.py', 'r', encoding='utf-8') as f:
+with open('../devices/rohde.py', 'r', encoding='utf-8') as f:
     content = f.read()
 
 # 查找并替换S参数配置部分
@@ -19,7 +19,7 @@ replacement = r'''\1
 content_new = re.sub(pattern, replacement, content)
 
 if content != content_new:
-    with open('backend/devices/rohde.py', 'w', encoding='utf-8') as f:
+    with open('../devices/rohde.py', 'w', encoding='utf-8') as f:
         f.write(content_new)
     print("[OK] 修改成功！")
 else:

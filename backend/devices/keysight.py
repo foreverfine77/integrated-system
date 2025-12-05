@@ -51,22 +51,6 @@ class KeysightE5071C(NetworkAnalyzerBase):
             self.write("*RST")
             
             # 清除状态
-            print(f"  >> *CLS")
-            self.write("*CLS")
-            
-            # 等待操作完成
-            print(f"  >> *OPC")
-            self.write("*OPC")
-            
-            # 设置触发为单次
-            print(f"\n[SCPI] 设置触发模式")
-            print(f"  >> INIT:CONT OFF (单次触发)")
-            self.write("INIT:CONT OFF")
-            
-            # 设置默认参数
-            print(f"\n[SCPI] 设置默认参数")
-            print(f"  >> SENS:BAND 1000 (IF带宽 1kHz)")
-            self.set_if_bandwidth(1000)  # 1kHz IF带宽
             
             print(f"  >> SOUR:POW -10 (源功率 -10dBm)")
             self.set_power_level(-10)    # -10dBm功率
@@ -137,17 +121,16 @@ class KeysightE5071C(NetworkAnalyzerBase):
             except Exception as e:
                 print(f"  [警告] 无法查询错误: {str(e)}")
             
-            # 设置测量次数
-            cmd_count = f"SENS:AVER:CLE; :SENS:AVER:COUN {measurement_count}; :SENS:AVER ON"
-            print(f"\n[SCPI] 设置测量次数")
-            print(f"  >> {cmd_count}")
-            print(f"  [说明] VNA将自动进行{measurement_count}次测量并平均")
-            self.write(cmd_count)
+            # 注意：measurement_count参数被忽略，硬件层面始终单次测量
+            # 软件层面通过vna_controller循环调用实现多次测量
+           
+            print(f"\n[SCPI] 设置单次测量模式")
+            print(f"  >> SENS:AVER OFF")
+            self.write("SENS:AVER OFF")
             
             # 触发测量
-            print(f"\n[SCPI] 触发测量")
+            print(f"\n[SCPI] 触发单次测量")
             print(f"  >> INIT:IMM")
-            print(f"  [说明] VNA开始连续测量{measurement_count}次...")
             self.trigger_sweep()
             
             print(f"[SCPI] 等待测量完成")

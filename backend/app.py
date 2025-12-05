@@ -18,6 +18,9 @@ from matrix_controller import MatrixController
 # 导入网络分析仪模块
 from vna_controller import VNAController
 
+# 导入改进的日志配置
+from logger_config import setup_logger, log_session_separator
+
 # 计算静态目录（兼容 PyInstaller）
 BASE_PATH = getattr(sys, "_MEIPASS", os.path.abspath(os.path.dirname(__file__)))
 STATIC_FOLDER = os.path.join(BASE_PATH, "dist")
@@ -30,16 +33,13 @@ if not os.path.exists(STATIC_FOLDER):
 app = Flask(__name__, static_folder=STATIC_FOLDER, static_url_path="")
 CORS(app)
 
-# 配置日志
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler('system.log', encoding='utf-8'),
-        logging.StreamHandler()
-    ]
+# 配置改进的日志系统
+logger = setup_logger(
+    name='multi_channel_system',
+    log_dir='logs',
+    max_bytes=10*1024*1024,  # 10MB per file
+    backup_count=20  # Keep 20 backup files
 )
-logger = logging.getLogger(__name__)
 
 # 全局控制器实例
 matrix_controller = MatrixController()

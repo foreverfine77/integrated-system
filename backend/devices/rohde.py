@@ -52,21 +52,6 @@ class RohdeZNA26(NetworkAnalyzerBase):
             
             # 清除状态
             print(f"  >> *CLS")
-            self.write("*CLS")
-            
-            # 等待操作完成
-            print(f"  >> *OPC")
-            self.write("*OPC")
-            
-            # 设置触发为单次
-            print(f"\n[SCPI] 设置触发模式")
-            print(f"  >> INIT:CONT OFF (单次触发)")
-            self.write("INIT:CONT OFF")
-            
-            # 设置默认参数
-            print(f"\n[SCPI] 设置默认参数")
-            print(f"  >> SENS:BAND 1000 (IF带宽 1kHz)")
-            self.set_if_bandwidth(1000)  # 1kHz IF带宽
             
             print(f"  >> SOUR:POW -10 (源功率 -10dBm)")
             self.set_power_level(-10)    # -10dBm功率
@@ -93,16 +78,17 @@ class RohdeZNA26(NetworkAnalyzerBase):
         - 配置转换模式（DC-UP：下变频，上边带）
         - 设置端口衰减
         """
-        try:`r`n            # 默认配置（如果未传入）
         try:
             # 默认配置（如果未传入）
             if config is None:
-                'ifPort': 2,
-                'loPort': 3,
-                'loFrequency': 300.0,
-                'loPower': 10.0,
-                'conversionMode': 'DCUP'
-            }
+                config = {
+                    'rfPort': 1,
+                    'ifPort': 2,
+                    'loPort': 3,
+                    'loFrequency': 300.0,
+                    'loPower': 10.0,
+                    'conversionMode': 'DCUP'
+                }
         
             print(f"\n{'='*70}")
             print(f"[罗德ZNA26] 配置VMIX混频器测量模式")
@@ -135,13 +121,13 @@ class RohdeZNA26(NetworkAnalyzerBase):
             self.write("SENSe1:FREQuency:CONVersion:MIXer:STAGes 1")
             
             print(f"  >> SENSe1:FREQuency:CONVersion:MIXer:RFPort 1")
-            self.write(f"SENSe1:FREQuency:CONVersion:MIXer:RFPort {config[\'rfPort\']}")
+            self.write(f"SENSe1:FREQuency:CONVersion:MIXer:RFPort {config['rfPort']}")
             
             print(f"  >> SENSe1:FREQuency:CONVersion:MIXer:IFPort 2")
-            self.write(f"SENSe1:FREQuency:CONVersion:MIXer:IFPort {config[\'ifPort\']}")
+            self.write(f"SENSe1:FREQuency:CONVersion:MIXer:IFPort {config['ifPort']}")
             
             print(f"  >> SENSe1:FREQuency:CONVersion:MIXer:LOPort1 PORT, 3")
-            self.write(f"SENSe1:FREQuency:CONVersion:MIXer:LOPort1 PORT, {config[\'loPort\']}")
+            self.write(f"SENSe1:FREQuency:CONVersion:MIXer:LOPort1 PORT, {config['loPort']}")
             
             # 配置倍频器
             print(f"\n[SCPI] 配置倍频器（基频工作）")
@@ -160,7 +146,7 @@ class RohdeZNA26(NetworkAnalyzerBase):
             self.write("SENSe1:FREQuency:CONVersion:MIXer:FIXed1 LO1")
             
             print(f"  >> SENSe1:FREQuency:CONVersion:MIXer:MFFixed LO1, 300000000.0")
-            lo_freq_hz = config[\'loFrequency\'] * 1e6
+            lo_freq_hz = config['loFrequency'] * 1e6
             self.write(f"SENSe1:FREQuency:CONVersion:MIXer:MFFixed LO1, {lo_freq_hz}")
             
             # 配置功率模式
@@ -175,12 +161,12 @@ class RohdeZNA26(NetworkAnalyzerBase):
             self.write("SOURce1:FREQuency:CONVersion:MIXer:PMODe IF, FUND")
             
             print(f"  >> SOURce1:FREQuency:CONVersion:MIXer:PMFixed LO1, 10.0 (LO功率10dBm)")
-            self.write(f"SOURce1:FREQuency:CONVersion:MIXer:PMFixed LO1, {config[\'loPower\']}")
+            self.write(f"SOURce1:FREQuency:CONVersion:MIXer:PMFixed LO1, {config['loPower']}")
             
             # 配置转换频率模式
             print(f"\n[SCPI] 配置转换频率 (DC-UP: 下变频上边带)")
             print(f"  >> SENSe1:FREQuency:CONVersion:MIXer:TFrequency1 DCUP")
-            self.write(f"SENSe1:FREQuency:CONVersion:MIXer:TFrequency1 {config[\'conversionMode\']}")
+            self.write(f"SENSe1:FREQuency:CONVersion:MIXer:TFrequency1 {config['conversionMode']}")
             
             print(f"  >> SENSe1:FREQuency:CONVersion MIX")
             self.write("SENSe1:FREQuency:CONVersion MIX")
@@ -275,7 +261,7 @@ class RohdeZNA26(NetworkAnalyzerBase):
         Args:
             parameter: 测量参数（S11/S21/SC21等）
             frequency_points: 频率点数
-            measurement_count: 测量次数
+            measurement_count: 测量次数（该参数被忽略，硬件层面始终单次测量，软件层面循环实现多次测量）
             
         Returns:
             (data_dict, error_msg): 测量数据字典和错误信息
@@ -302,8 +288,7 @@ class RohdeZNA26(NetworkAnalyzerBase):
                 print(f"[SCPI] 配置S参数测量")
 
                 # 确保设备处于标准测量模式（如果之前测量了SC参数）
-                print(f"
-[SCPI] 恢复标准测量模式")
+                print(f"\n[SCPI] 恢复标准测量模式")
                 print(f"  >> SENSe1:FREQuency:CONVersion FUND (基频模式)")
                 self.write("SENSe1:FREQuency:CONVersion FUND")
 
@@ -405,7 +390,10 @@ class RohdeZNA26(NetworkAnalyzerBase):
             cmd_count = f"SENS:SWE:COUNt {measurement_count}"
             print(f"\n[SCPI] 设置测量次数")
             print(f"  >> {cmd_count}")
-            if measurement_count == 1:`n                print(f"  [说明] 单次测量（软件循环模式）")`n            else:`n                print(f"  [说明] VNA将自动进行{measurement_count}次测量并平均")
+            if measurement_count == 1:
+                print(f"  [说明] 单次测量（软件循环模式）")
+            else:
+                print(f"  [说明] VNA将自动进行{measurement_count}次测量")
             self.write(cmd_count)
             
             # 触发测量

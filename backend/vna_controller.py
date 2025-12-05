@@ -14,6 +14,14 @@ import math
 from datetime import datetime
 from flask import jsonify, send_file
 
+try:
+    from devices.siyi import Siyi3674L
+    from devices.rohde import RohdeZNA26
+    from devices.keysight import KeysightE5071C
+except ImportError as e:
+    print(f"警告: 无法导入设备驱动: {e}")
+    Siyi3674L = RohdeZNA26 = KeysightE5071C = None
+
 logger = logging.getLogger(__name__)
 
 # 模拟的设备配置
@@ -486,7 +494,7 @@ class VNAController:
     
     def _measurement_worker(self, parameters, measurement_count, frequency_points, 
                            start_frequency, stop_frequency):
-        """测量工作线程 - 使用软件循环平均"""
+        """测量工作线程 - 软件循环多次测量"""
         self.measurement_status['is_running'] = True
         self.measurement_status['progress'] = 0
         self.measurement_status['current_measurement'] = 0
@@ -497,7 +505,7 @@ class VNAController:
         
         try:
             logger.info(f"开始测量任务: {len(parameters)}个参数, 每个{measurement_count}次")
-            logger.info(f"使用软件循环模式 - 每次单独测量")
+            logger.info(f"使用软件循环模式 - 每次单独测量并保存原始数据")
             
             total_count = 0
             

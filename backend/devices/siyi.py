@@ -66,7 +66,7 @@ class Siyi3674L(NetworkAnalyzerBase):
         Args:
             parameter: 测量参数（S11/S21/SC21等）
             frequency_points: 频率点数
-            measurement_count: 测量次数
+            measurement_count: 测量次数（该参数被忽略，硬件层面始终单次测量，软件层面循环实现多次测量）
             
         Returns:
             (data_dict, error_msg): 测量数据字典和错误信息
@@ -170,12 +170,11 @@ class Siyi3674L(NetworkAnalyzerBase):
             
             # 注意：频率点数已在 set_frequency_range() 中设置，无需重复
             
-            # ⭐ 设置测量次数
-            cmd_count = f":SENS:SWE:COUNt {measurement_count}"
-            print(f"\n[SCPI] 设置测量次数")
-            print(f"  >> {cmd_count}")
-            print(f"  [说明] VNA将自动进行{measurement_count}次测量并平均")
-            self.write(cmd_count)
+            # ⭐ 硬件层面：固定为单次测量（不使用硬件平均）
+            # 软件层面：vna_controller通过循环调用实现多次测量
+            print(f"\n[SCPI] 设置单次测量模式")
+            print(f"  >> :SENS:SWE:COUNt 1")
+            self.write(":SENS:SWE:COUNt 1")
             
             # 触发测量
             print(f"\n[SCPI] 触发测量")
@@ -255,12 +254,12 @@ class Siyi3674L(NetworkAnalyzerBase):
         if not (2 <= points <= self.max_points):
             raise ValueError(f"频点数超出范围: 2 - {self.max_points}")
         
-            print(f"\n[SCPI] 设置频率范围")
-            print(f"  >> :SENS:FREQ:STAR {start_freq}")
-            self.write(f":SENS:FREQ:STAR {start_freq}")
-            print(f"  >> :SENS:FREQ:STOP {stop_freq}")
-            self.write(f":SENS:FREQ:STOP {stop_freq}")
-            print(f"  >> :SENS:SWE:POIN {points}")
+        print(f"\n[SCPI] 设置频率范围")
+        print(f"  >> :SENS:FREQ:STAR {start_freq}")
+        self.write(f":SENS:FREQ:STAR {start_freq}")
+        print(f"  >> :SENS:FREQ:STOP {stop_freq}")
+        self.write(f":SENS:FREQ:STOP {stop_freq}")
+        print(f"  >> :SENS:SWE:POIN {points}")
         self.write(f":SENS:SWE:POIN {points}")
     
     def set_power_level(self, power: float):

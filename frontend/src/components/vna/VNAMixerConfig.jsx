@@ -72,18 +72,45 @@ function VNAMixerConfig({ isConnected, deviceType, addLog }) {
 
         setIsLoading(true)
         try {
+            console.log('[VNAMixerConfig] 发送配置:', config)
             const response = await vnaAPI.setMixerConfig(config)
+            console.log('[VNAMixerConfig] 后端响应:', response.data)
+
             if (response.data.success) {
                 setToast({ message: '混频器配置已保存', type: 'success' })
                 addLog('混频器配置已更新', 'success', 'vna')
                 addLog(`  LO频率: ${config.loFrequency} MHz, LO功率: ${config.loPower} dBm`, 'info', 'vna')
             } else {
-                setToast({ message: response.data.message || '保存失败', type: 'error' })
-                addLog('混频器配置保存失败', 'error', 'vna')
+                // 显示后端返回的错误消息
+                const errorMsg = response.data.message || response.data.errors?.join('; ') || '保存失败'
+                setToast({ message: errorMsg, type: 'error', duration: 5000 })
+                addLog(`混频器配置保存失败: ${errorMsg}`, 'error', 'vna')
             }
         } catch (error) {
+            console.error('[VNAMixerConfig] 保存配置错误:', error)
+
+            // 提取详细错误信息
+            let errorMsg = '保存配置失败'
+
+            if (error.response) {
+                // 后端返回了错误响应
+                errorMsg = error.response.data?.message ||
+                    error.response.data?.errors?.join('; ') ||
+                    `HTTP ${error.response.status}: ${error.response.statusText}`
+                console.error('[VNAMixerConfig] 后端错误响应:', error.response.data)
+            } else if (error.request) {
+                // 请求已发出，但没有收到响应
+                errorMsg = '后端服务无响应，请检查服务是否运行'
+                console.error('[VNAMixerConfig] 无响应错误:', error.request)
+            } else {
+                // 请求配置出错
+                errorMsg = error.message || '请求配置错误'
+                console.error('[VNAMixerConfig] 请求错误:', error.message)
+            }
+
+            setToast({ message: errorMsg, type: 'error', duration: 5000 })
+            addLog(`保存混频器配置失败: ${errorMsg}`, 'error', 'vna')
             handleAPIError(error, addLog, 'vna')
-            setToast({ message: '保存配置失败', type: 'error' })
         } finally {
             setIsLoading(false)
         }

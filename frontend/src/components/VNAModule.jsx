@@ -3,6 +3,7 @@ import VNAConnection from './vna/VNAConnection'
 import VNAParameters from './vna/VNAParameters'
 import VNAMeasurement from './vna/VNAMeasurement'
 import VNAProgress from './vna/VNAProgress'
+import VNAMixerConfig from './vna/VNAMixerConfig'
 import Toast from './common/Toast'
 import { vnaAPI, handleAPIError } from '../services/api'
 import { useApp } from '../contexts/AppContext'
@@ -205,6 +206,12 @@ function VNAModule() {
           />
 
           <VNAParameters />
+
+          <VNAMixerConfig
+            isConnected={isConnected}
+            deviceType={selectedDevice?.id}
+            addLog={addLog}
+          />
         </div>
 
         {/* 中间：测量进度和结果 */}

@@ -82,7 +82,7 @@ function VNAMeasurement({ onStart, onStop, onExport }) {
                         </div>
                         <div>
                             <label className="block text-xs text-slate-500 mb-1">
-                                平均次数
+                                测量次数
                             </label>
                             <input
                                 type="number"
@@ -93,6 +93,7 @@ function VNAMeasurement({ onStart, onStop, onExport }) {
                                 disabled={isMeasuring}
                                 className="w-full px-3 py-2 text-sm border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:bg-slate-100"
                             />
+                            <p className="text-xs text-slate-400 mt-1">软件循环，每次单独测量</p>
                         </div>
                     </div>
                 </div>
