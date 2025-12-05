@@ -13,7 +13,8 @@ from datetime import datetime
 from flask import jsonify
 from typing import Tuple, Union
 
-logger = logging.getLogger(__name__)
+# 使用主logger（将在app.py中配置）
+logger = logging.getLogger('multi_channel_system')
 
 # 定义通道集合
 COM1_CHANNELS = set(range(0, 73))

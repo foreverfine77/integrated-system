@@ -6,8 +6,47 @@
 import logging
 import os
 import sys
+import tempfile
 from datetime import datetime
 from logging.handlers import RotatingFileHandler
+
+
+def get_log_directory(log_dir='logs'):
+    """
+    获取日志目录路径，兼容开发环境和打包环境
+    
+    Args:
+        log_dir: 日志目录名称
+        
+    Returns:
+        日志目录的绝对路径
+    """
+    # 检测是否为打包后的exe环境
+    if getattr(sys, 'frozen', False):
+        # 打包后的环境：使用exe所在目录
+        base_path = os.path.dirname(sys.executable)
+        log_path = os.path.join(base_path, log_dir)
+        
+        # 尝试在exe目录创建logs
+        try:
+            os.makedirs(log_path, exist_ok=True)
+            # 测试写权限
+            test_file = os.path.join(log_path, '.write_test')
+            with open(test_file, 'w') as f:
+                f.write('test')
+            os.remove(test_file)
+            return log_path
+        except (OSError, PermissionError):
+            # 如果exe目录无写权限，使用用户临时目录
+            log_path = os.path.join(tempfile.gettempdir(), 'integrated_system', log_dir)
+            os.makedirs(log_path, exist_ok=True)
+            return log_path
+    else:
+        # 开发环境：使用脚本所在目录
+        base_path = os.path.dirname(os.path.abspath(__file__))
+        log_path = os.path.join(base_path, log_dir)
+        os.makedirs(log_path, exist_ok=True)
+        return log_path
 
 
 def setup_logger(name='system', log_dir='logs', max_bytes=10*1024*1024, backup_count=10):
@@ -16,22 +55,22 @@ def setup_logger(name='system', log_dir='logs', max_bytes=10*1024*1024, backup_c
     
     Args:
         name: 日志器名称
-        log_dir: 日志文件目录
+        log_dir: 日志文件目录名
         max_bytes: 单个日志文件最大大小（默认10MB）
         backup_count: 保留的日志文件数量（默认10个）
     
     Returns:
         配置好的logger实例
     """
-    # 创建日志目录
-    os.makedirs(log_dir, exist_ok=True)
+    # 获取适配环境的日志目录
+    log_path = get_log_directory(log_dir)
     
     # 生成当前会话的日志文件名（包含启动时间）
     session_time = datetime.now().strftime("%Y%m%d_%H%M%S")
-    current_log_file = os.path.join(log_dir, f'session_{session_time}.log')
+    current_log_file = os.path.join(log_path, f'session_{session_time}.log')
     
     # 也保留一个最新日志的符号链接（用于快速查看）
-    latest_log_file = os.path.join(log_dir, 'latest.log')
+    latest_log_file = os.path.join(log_path, 'latest.log')
     
     # 创建logger
     logger = logging.getLogger(name)
@@ -81,7 +120,7 @@ def setup_logger(name='system', log_dir='logs', max_bytes=10*1024*1024, backup_c
     logger.addHandler(console_handler)
     
     # 4. 错误日志单独文件
-    error_log_file = os.path.join(log_dir, 'errors.log')
+    error_log_file = os.path.join(log_path, 'errors.log')
     error_handler = RotatingFileHandler(
         error_log_file,
         maxBytes=max_bytes,

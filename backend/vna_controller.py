@@ -22,7 +22,8 @@ except ImportError as e:
     print(f"警告: 无法导入设备驱动: {e}")
     Siyi3674L = RohdeZNA26 = KeysightE5071C = None
 
-logger = logging.getLogger(__name__)
+# 使用主logger（将在app.py中配置）
+logger = logging.getLogger('multi_channel_system')
 
 # 模拟的设备配置
 SUPPORTED_DEVICES = [
