@@ -12,14 +12,23 @@ from datetime import datetime
 import threading
 import time
 
-# 导入矩阵开关模块
+# !!重要!! 必须先配置日志系统，再导入控制器
+# 因为控制器在导入时就会获取 logger 实例
+from logger_config import setup_logger, log_session_separator
+
+# 配置改进的日志系统（在导入控制器之前）
+logger = setup_logger(
+    name='multi_channel_system',
+    log_dir='logs',
+    max_bytes=10*1024*1024,  # 10MB per file
+    backup_count=20  # Keep 20 backup files
+)
+
+# 导入矩阵开关模块（logger已配置好）
 from matrix_controller import MatrixController
 
-# 导入网络分析仪模块
+# 导入网络分析仪模块（logger已配置好）
 from vna_controller import VNAController
-
-# 导入改进的日志配置
-from logger_config import setup_logger, log_session_separator
 
 # 计算静态目录（兼容 PyInstaller）
 BASE_PATH = getattr(sys, "_MEIPASS", os.path.abspath(os.path.dirname(__file__)))
@@ -32,14 +41,6 @@ if not os.path.exists(STATIC_FOLDER):
 # 创建Flask应用
 app = Flask(__name__, static_folder=STATIC_FOLDER, static_url_path="")
 CORS(app)
-
-# 配置改进的日志系统
-logger = setup_logger(
-    name='multi_channel_system',
-    log_dir='logs',
-    max_bytes=10*1024*1024,  # 10MB per file
-    backup_count=20  # Keep 20 backup files
-)
 
 # 全局控制器实例
 matrix_controller = MatrixController()
