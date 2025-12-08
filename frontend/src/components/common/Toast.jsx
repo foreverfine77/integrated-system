@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { CheckCircle, XCircle, AlertCircle, X } from 'lucide-react'
 
 /**
- * Toast通知组件
+ * Toast通知组件 (Claude风格)
  * 用于显示成功、错误、警告等消息
  */
 function Toast({ message, type = 'info', onClose, duration = 3000 }) {
@@ -17,35 +17,46 @@ function Toast({ message, type = 'info', onClose, duration = 3000 }) {
 
     const styles = {
         success: {
-            bg: 'bg-emerald-50',
-            border: 'border-emerald-200',
-            text: 'text-emerald-800',
-            icon: <CheckCircle className="w-5 h-5 text-emerald-600" />
+            bg: 'rgba(127, 140, 84, 0.1)',
+            border: 'var(--color-success)',
+            text: 'var(--text-primary)',
+            icon: <CheckCircle className="w-5 h-5" style={{ color: 'var(--color-success)' }} />
         },
         error: {
-            bg: 'bg-red-50',
-            border: 'border-red-200',
-            text: 'text-red-800',
-            icon: <XCircle className="w-5 h-5 text-red-600" />
+            bg: 'rgba(139, 69, 19, 0.1)',
+            border: 'var(--color-error)',
+            text: 'var(--text-primary)',
+            icon: <XCircle className="w-5 h-5" style={{ color: 'var(--color-error)' }} />
         },
         warning: {
-            bg: 'bg-amber-50',
-            border: 'border-amber-200',
-            text: 'text-amber-800',
-            icon: <AlertCircle className="w-5 h-5 text-amber-600" />
+            bg: 'rgba(184, 134, 11, 0.1)',
+            border: 'var(--color-warning)',
+            text: 'var(--text-primary)',
+            icon: <AlertCircle className="w-5 h-5" style={{ color: 'var(--color-warning)' }} />
+        },
+        info: {
+            bg: 'rgba(127, 140, 84, 0.1)',
+            border: 'var(--color-info)',
+            text: 'var(--text-primary)',
+            icon: <AlertCircle className="w-5 h-5" style={{ color: 'var(--color-info)' }} />
         }
     }
 
     const style = styles[type] || styles.info
 
     return (
-        <div className={`fixed top-4 right-4 z-50 flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg border ${style.bg} ${style.border} ${style.text} max-w-md animate-slide-in-right`}>
+        <div className="toast fixed top-4 right-4 z-50 flex items-center gap-3 animate-slide-in-right"
+            style={{
+                backgroundColor: style.bg,
+                borderColor: style.border,
+                color: style.text
+            }}>
             {style.icon}
-            <p className="flex-1 font-medium">{message}</p>
-            <button
-                onClick={onClose}
-                className="p-1 hover:bg-white/50 rounded transition-colors"
-            >
+            <p className="flex-1" style={{ fontWeight: 'var(--weight-medium)' }}>{message}</p>
+            <button onClick={onClose} className="p-1 rounded transition-colors"
+                style={{ color: 'var(--text-tertiary)' }}
+                onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(255,255,255,0.5)'}
+                onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}>
                 <X className="w-4 h-4" />
             </button>
         </div>
