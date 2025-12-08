@@ -85,40 +85,6 @@ function PowerMeasurementTab() {
                     ))}
                 </div>
             </div>
-
-            {/* 功能说明 */}
-            <div style={{
-                backgroundColor: 'rgba(127, 140, 84, 0.08)',
-                borderColor: 'var(--color-info)',
-                borderWidth: '1px',
-                borderStyle: 'solid',
-                borderRadius: 'var(--radius-md)',
-                padding: 'var(--spacing-md)'
-            }}>
-                <h4 style={{
-                    fontSize: 'var(--text-sm)',
-                    fontWeight: 'var(--weight-semibold)',
-                    color: 'var(--text-primary)',
-                    marginBottom: 'var(--spacing-sm)'
-                }}>
-                    功率测量要求
-                </h4>
-                <ul className="space-y-1" style={{
-                    fontSize: 'var(--text-xs)',
-                    color: 'var(--text-secondary)'
-                }}>
-                    <li>✓ 专门的功率传感器</li>
-                    <li>✓ 功率校准步骤</li>
-                    <li>✓ VNA设备支持功率测量</li>
-                </ul>
-                <p style={{
-                    fontSize: 'var(--text-xs)',
-                    color: 'var(--text-tertiary)',
-                    marginTop: 'var(--spacing-md)'
-                }}>
-                    该功能将在后续版本中实现。
-                </p>
-            </div>
         </div>
     )
 }

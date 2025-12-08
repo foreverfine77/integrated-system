@@ -22,14 +22,24 @@ export function VNAProvider({ children }) {
     const [startFrequency, setStartFrequency] = useState(500)
     const [stopFrequency, setStopFrequency] = useState(2500)
 
-    // 混频器配置
+    // 混频器配置（支持多种设备）
     const [mixerConfig, setMixerConfig] = useState({
+        // 罗德ZNA26 VMIX模式参数
         rfPort: 1,
         ifPort: 2,
         loPort: 3,
         loFrequency: 300,  // MHz
         loPower: 10,       // dBm
-        conversionMode: 'DCUP'
+        conversionMode: 'DCUP',
+
+        // 思仪3674L Scalar Mixer模式参数
+        input_start_freq: 3000,   // MHz
+        input_stop_freq: 4000,    // MHz
+        input_power: -10,         // dBm
+        lo_port: 3,               // Port 1-4
+        lo_freq: 2000,            // MHz
+        lo_power: 10,             // dBm
+        sideband: 'LOW'           // LOW/HIGH
     })
 
     // 当前激活的测量Tab

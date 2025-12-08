@@ -304,4 +304,108 @@ class Siyi3674L(NetworkAnalyzerBase):
                 break
             
             time.sleep(0.5)  # 短暂休息再查询
+    
+    def configure_mixer_mode(self, mixer_config: Dict) -> Tuple[bool, str]:
+        """配置混频器模式（Scalar Mixer/Converter）
+        
+        Args:
+            mixer_config: 混频器配置字典，包含：
+                - input_start_freq: Input起始频率 (Hz)
+                - input_stop_freq: Input终止频率 (Hz)
+                - input_power: Input功率 (dBm)
+                - lo_port: LO端口号 (1-4)
+                - lo_freq: LO固定频率 (Hz)
+                - lo_power: LO功率 (dBm)
+                - sideband: 边带选择 ('LOW' 或 'HIGH')
+                
+        Returns:
+            (success, message): 配置是否成功和消息
+        """
+        if not self.connected:
+            return False, "设备未连接"
+        
+        try:
+            print(f"\n{'='*70}")
+            print(f"[混频器] 思仪3674L - 配置混频器模式")
+            print(f"{'='*70}\n")
+            
+            # 1. 删除所有旧迹线
+            print(f"[SCPI] 删除旧迹线")
+            print(f"  >> CALC1:PAR:DEL:ALL")
+            self.write("CALC1:PAR:DEL:ALL")
+            
+            # 2. 设置为标量混频器模式
+            print(f"\n[SCPI] 设置测量类为标量混频器")
+            print(f'  >> SENS1:CLAS "Scalar Mixer/Converter"')
+            self.write('SENS1:CLAS "Scalar Mixer/Converter"')
+            
+            # 3. 配置Input（扫频）
+            print(f"\n[SCPI] 配置Input - 扫频模式")
+            print(f"  >> SENS1:MIX:INP:FREQ:MODE SWE")
+            self.write("SENS1:MIX:INP:FREQ:MODE SWE")
+            
+            input_start = mixer_config['input_start_freq']
+            input_stop = mixer_config['input_stop_freq']
+            input_power = mixer_config['input_power']
+            
+            print(f"  >> SENS1:MIX:INP:FREQ:STAR {input_start}")
+            self.write(f"SENS1:MIX:INP:FREQ:STAR {input_start}")
+            print(f"  >> SENS1:MIX:INP:FREQ:STOP {input_stop}")
+            self.write(f"SENS1:MIX:INP:FREQ:STOP {input_stop}")
+            print(f"  >> SENS1:MIX:INP:POW {input_power}")
+            self.write(f"SENS1:MIX:INP:POW {input_power}")
+            
+            # 4. 配置LO（固定频率）
+            print(f"\n[SCPI] 配置LO - 固定频率模式")
+            lo_port = mixer_config['lo_port']
+            lo_freq = mixer_config['lo_freq']
+            lo_power = mixer_config['lo_power']
+            
+            print(f'  >> SENS1:MIX:LO:NAME "Port {lo_port}"')
+            self.write(f'SENS1:MIX:LO:NAME "Port {lo_port}"')
+            print(f"  >> SENS1:MIX:LO:FREQ:MODE FIX")
+            self.write("SENS1:MIX:LO:FREQ:MODE FIX")
+            print(f"  >> SENS1:MIX:LO:FREQ:FIX {lo_freq}")
+            self.write(f"SENS1:MIX:LO:FREQ:FIX {lo_freq}")
+            print(f"  >> SENS1:MIX:LO:POW {lo_power}")
+            self.write(f"SENS1:MIX:LO:POW {lo_power}")
+            
+            # 5. 配置Output（边带）
+            sideband = mixer_config.get('sideband', 'LOW')
+            print(f"\n[SCPI] 配置Output - 边带选择")
+            print(f"  >> SENS1:MIX:OUTP:FREQ:SID {sideband}")
+            self.write(f"SENS1:MIX:OUTP:FREQ:SID {sideband}")
+            
+            # 6. 应用混频器设置
+            print(f"\n[SCPI] 应用混频器配置")
+            print(f"  >> SENS1:MIX:APPL")
+            self.write("SENS1:MIX:APPL")
+            
+            # 检查错误
+            print(f"\n[SCPI] 检查设备错误")
+            try:
+                err_code, err_msg = self.get_error()
+                if err_code != 0:
+                    print(f"  [警告] 设备报告错误: [{err_code}] {err_msg}")
+                    if "编码问题" not in err_msg and "UnicodeDecodeError" not in err_msg:
+                        return False, f"混频器配置失败: {err_msg}"
+                else:
+                    print(f"  [OK] 无错误")
+            except Exception as e:
+                print(f"  [警告] 无法查询错误: {str(e)}")
+            
+            print(f"\n[成功] 混频器模式配置完成")
+            print(f"  Input: {input_start/1e9:.3f}-{input_stop/1e9:.3f} GHz @ {input_power} dBm")
+            print(f"  LO: {lo_freq/1e9:.3f} GHz @ {lo_power} dBm (Port {lo_port})")
+            print(f"  Output: {sideband} Sideband")
+            print(f"{'='*70}\n")
+            
+            return True, "混频器配置成功"
+            
+        except Exception as e:
+            print(f"\n[错误] 混频器配置失败: {str(e)}")
+            print(f"{'='*70}\n")
+            import traceback
+            traceback.print_exc()
+            return False, f"混频器配置失败: {str(e)}"
 

@@ -15,7 +15,7 @@
     cursor: pointer;
     box-shadow:
         var(--shadow-md),
-        0 1px 0 rgba(255, 25, 255, 0.2) inset,
+        0 1px 0 rgba(255, 255, 255, 0.2) inset,
         0 -1px 0 rgba(0, 0, 0, 0.1) inset;
     transition: all var(--transition-base);
     position: relative;
@@ -30,6 +30,25 @@
 .btn-gold:active {
     box-shadow: var(--shadow-sm);
     transform: translateY(0);
+}
+
+/* 深色模式下的btn-gold - 增强对比度 */
+.dark .btn-gold {
+    background: linear-gradient(135deg, #FFD700, #F4D03F);
+    border: 2px solid #FFD700;
+    color: #1C1410;
+    box-shadow:
+        0 4px 12px rgba(244, 208, 63, 0.4),
+        0 1px 0 rgba(255, 255, 255, 0.3) inset,
+        0 0 20px rgba(255, 215, 0, 0.3);
+}
+
+.dark .btn-gold:hover {
+    background: linear-gradient(135deg, #FFE57F, #FFD700);
+    box-shadow:
+        0 6px 16px rgba(244, 208, 63, 0.6),
+        0 0 30px rgba(255, 215, 0, 0.5);
+    border-color: #FFE57F;
 }
 
 .btn-brown {
@@ -48,6 +67,22 @@
     box-shadow: 0 0 16px rgba(139, 111, 71, 0.3);
     transform: translateY(-1px);
 }
+
+/* 深色模式下的btn-brown - 增强对比度 */
+.dark .btn-brown {
+    background: linear-gradient(135deg, #D4AA77, #C39866);
+    border: 2px solid #D4AA77;
+    color: #1C1410;
+    box-shadow:
+        0 4px 12px rgba(195, 152, 102, 0.4),
+        0 1px 0 rgba(255, 255, 255, 0.2) inset;
+}
+
+.dark .btn-brown:hover {
+    background: linear-gradient(135deg, #E0B889, #D4AA77);
+    box-shadow: 0 6px 16px rgba(195, 152, 102, 0.6);
+}
+
 
 /* ========== 输入框组件 ========== */
 
@@ -75,6 +110,25 @@
 
 .input-gold::placeholder {
     color: var(--text-tertiary);
+}
+
+/* 深色模式下的input-gold */
+.dark .input-gold {
+    background: rgba(28, 20, 16, 0.6);
+    border: 1.5px solid rgba(212, 170, 102, 0.3);
+    color: #F5E6D3;
+}
+
+.dark .input-gold:focus {
+    background: rgba(28, 20, 16, 0.8);
+    border-color: var(--border-gold);
+    box-shadow:
+        0 0 0 3px rgba(212, 170, 102, 0.15),
+        0 0 12px rgba(212, 170, 102, 0.2);
+}
+
+.dark .input-gold::placeholder {
+    color: rgba(212, 170, 102, 0.5);
 }
 
 /* ========== 卡片组件 ========== */
@@ -323,6 +377,32 @@
     outline: none;
     border-color: var(--border-gold);
     box-shadow: 0 0 0 3px rgba(201, 169, 97, 0.1);
+}
+
+/* 深色模式下的select-gold */
+.dark .select-gold {
+    background-color: rgba(28, 20, 16, 0.6);
+    background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='%23D4AA66' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L6 6L11 1'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    border: 1.5px solid rgba(212, 170, 102, 0.3);
+    color: #F5E6D3;
+}
+
+.dark .select-gold:focus {
+    background-color: rgba(28, 20, 16, 0.8);
+    background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='%23D4AA66' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L6 6L11 1'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    border-color: var(--border-gold);
+    box-shadow:
+        0 0 0 3px rgba(212, 170, 102, 0.15),
+        0 0 12px rgba(212, 170, 102, 0.2);
+}
+
+.dark .select-gold option {
+    background: #2A2420;
+    color: #F5E6D3;
 }
 
 /* ========== Toast通知 ========== */

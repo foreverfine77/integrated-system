@@ -21,7 +21,9 @@ function MixerMeasurementTab() {
 
     const [isLoading, setIsLoading] = useState(false)
     const [toast, setToast] = useState(null)
-    const isMixerSupported = isConnected && selectedDevice?.id === 'rohde-zna26'
+    const isSiyiMixer = isConnected && selectedDevice?.id === 'siyi-3674l'
+    const isRohdeMixer = isConnected && selectedDevice?.id === 'rohde-zna26'
+    const isMixerSupported = isSiyiMixer || isRohdeMixer
 
     const scParameters = [
         { id: 'SC11', name: 'Sc11', description: '变频 S11' },
@@ -48,10 +50,23 @@ function MixerMeasurementTab() {
 
     const handleSave = async () => {
         const errors = []
-        const ports = [mixerConfig.rfPort, mixerConfig.ifPort, mixerConfig.loPort]
-        if (new Set(ports).size !== ports.length) errors.push('RF、IF、LO端口不能重复')
-        if (mixerConfig.loFrequency < 10 || mixerConfig.loFrequency > 26500) errors.push('LO频率范围: 10-26500 MHz')
-        if (mixerConfig.loPower < -30 || mixerConfig.loPower > 10) errors.push('LO功率范围: -30 至 +10 dBm')
+
+        if (isRohdeMixer) {
+            // 罗德ZNA26验证
+            const ports = [mixerConfig.rfPort, mixerConfig.ifPort, mixerConfig.loPort]
+            if (new Set(ports).size !== ports.length) errors.push('RF、IF、LO端口不能重复')
+            if (mixerConfig.loFrequency < 10 || mixerConfig.loFrequency > 26500) errors.push('LO频率范围: 10-26500 MHz')
+            if (mixerConfig.loPower < -30 || mixerConfig.loPower > 10) errors.push('LO功率范围: -30 至 +10 dBm')
+        } else if (isSiyiMixer) {
+            // 思仪3674L验证
+            if (mixerConfig.input_start_freq < 10 || mixerConfig.input_start_freq > 67000) errors.push('Input起始频率范围: 10-67000 MHz')
+            if (mixerConfig.input_stop_freq < 10 || mixerConfig.input_stop_freq > 67000) errors.push('Input终止频率范围: 10-67000 MHz')
+            if (mixerConfig.input_start_freq >= mixerConfig.input_stop_freq) errors.push('Input起始频率必须小于终止频率')
+            if (mixerConfig.input_power < -55 || mixerConfig.input_power > 10) errors.push('Input功率范围: -55 至 +10 dBm')
+            if (mixerConfig.lo_port < 1 || mixerConfig.lo_port > 4) errors.push('LO端口范围: 1-4')
+            if (mixerConfig.lo_freq < 10 || mixerConfig.lo_freq > 67000) errors.push('LO频率范围: 10-67000 MHz')
+            if (mixerConfig.lo_power < -55 || mixerConfig.lo_power > 10) errors.push('LO功率范围: -55 至 +10 dBm')
+        }
 
         if (errors.length > 0) {
             setToast({ message: errors.join('; '), type: 'error', duration: 5000 })
@@ -60,8 +75,16 @@ function MixerMeasurementTab() {
         }
 
         setIsLoading(true)
+
+        // 为思仪设备转换单位：MHz → Hz
+        const configToSend = isSiyiMixer ? {
+            ...mixerConfig,
+            input_start_freq: mixerConfig.input_start_freq * 1e6,
+            input_stop_freq: mixerConfig.input_stop_freq * 1e6,
+            lo_freq: mixerConfig.lo_freq * 1e6
+        } : mixerConfig
         try {
-            const response = await vnaAPI.setMixerConfig(mixerConfig)
+            const response = await vnaAPI.setMixerConfig(configToSend)
             if (response.data.success) {
                 setToast({ message: '混频器配置已保存', type: 'success' })
                 addLog('混频器配置已更新', 'success', 'vna')
@@ -79,7 +102,11 @@ function MixerMeasurementTab() {
     }
 
     const handleReset = () => {
-        setMixerConfig({ rfPort: 1, ifPort: 2, loPort: 3, loFrequency: 300, loPower: 10, conversionMode: 'DCUP' })
+        if (isRohdeMixer) {
+            setMixerConfig({ ...mixerConfig, rfPort: 1, ifPort: 2, loPort: 3, loFrequency: 300, loPower: 10, conversionMode: 'DCUP' })
+        } else if (isSiyiMixer) {
+            setMixerConfig({ ...mixerConfig, input_start_freq: 3000, input_stop_freq: 4000, input_power: -10, lo_port: 3, lo_freq: 2000, lo_power: 10, sideband: 'LOW' })
+        }
         setToast({ message: '已恢复默认配置', type: 'info' })
         addLog('混频器配置已恢复默认值', 'info', 'vna')
     }
@@ -104,9 +131,9 @@ function MixerMeasurementTab() {
                     padding: 'var(--spacing-md)'
                 }}>
                     <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-primary)' }}>
-                        <strong>⚠️ 混频器测量仅支持罗德ZNA26</strong><br />
+                        <strong>⚠️ 混频器测量仅支持罗德ZNA26和思仪3674L</strong><br />
                         {!isConnected && '请先连接设备'}
-                        {isConnected && selectedDevice?.id !== 'rohde-zna26' && '当前设备不支持混频器测量'}
+                        {isConnected && !isMixerSupported && '当前设备不支持混频器测量'}
                     </p>
                 </div>
             </div>
@@ -123,68 +150,146 @@ function MixerMeasurementTab() {
                     <div className="flex items-center gap-2 mb-4">
                         <Settings className="w-5 h-5" style={{ color: 'var(--vna-primary)' }} />
                         <h3 style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)', color: 'var(--text-secondary)' }}>
-                            混频器配置 (VMIX)
+                            混频器配置 {isRohdeMixer ? '(VMIX)' : isSiyiMixer ? '(Scalar Mixer)' : ''}
                         </h3>
                     </div>
 
-                    {/* 端口配置 */}
-                    <div className="mb-4">
-                        <label style={{ display: 'block', fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-medium)', color: 'var(--text-tertiary)', marginBottom: 'var(--spacing-sm)' }}>端口配置</label>
-                        <div className="grid grid-cols-3 gap-3">
-                            {['RF端口', 'IF端口', 'LO端口'].map((label, idx) => (
-                                <div key={label}>
-                                    <label style={{ display: 'block', fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', marginBottom: '4px' }}>{label}</label>
-                                    <select
-                                        value={idx === 0 ? mixerConfig.rfPort : idx === 1 ? mixerConfig.ifPort : mixerConfig.loPort}
-                                        onChange={(e) => setMixerConfig({
-                                            ...mixerConfig,
-                                            [idx === 0 ? 'rfPort' : idx === 1 ? 'ifPort' : 'loPort']: parseInt(e.target.value)
-                                        })}
-                                        className="select-gold w-full"
-                                    >
-                                        <option value={1}>Port 1</option>
-                                        <option value={2}>Port 2</option>
-                                        <option value={3}>Port 3</option>
-                                        <option value={4}>Port 4</option>
-                                    </select>
+                    {/* 罗德ZNA26配置 */}
+                    {isRohdeMixer && (
+                        <>
+                            {/* 端口配置 */}
+                            <div className="mb-4">
+                                <label style={{ display: 'block', fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-medium)', color: 'var(--text-tertiary)', marginBottom: 'var(--spacing-sm)' }}>端口配置</label>
+                                <div className="grid grid-cols-3 gap-3">
+                                    {['RF端口', 'IF端口', 'LO端口'].map((label, idx) => (
+                                        <div key={label}>
+                                            <label style={{ display: 'block', fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', marginBottom: '4px' }}>{label}</label>
+                                            <select
+                                                value={idx === 0 ? mixerConfig.rfPort : idx === 1 ? mixerConfig.ifPort : mixerConfig.loPort}
+                                                onChange={(e) => setMixerConfig({
+                                                    ...mixerConfig,
+                                                    [idx === 0 ? 'rfPort' : idx === 1 ? 'ifPort' : 'loPort']: parseInt(e.target.value)
+                                                })}
+                                                className="select-gold w-full"
+                                            >
+                                                <option value={1}>Port 1</option>
+                                                <option value={2}>Port 2</option>
+                                                <option value={3}>Port 3</option>
+                                                <option value={4}>Port 4</option>
+                                            </select>
+                                        </div>
+                                    ))}
                                 </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* LO配置 */}
-                    <div className="mb-4">
-                        <label style={{ display: 'block', fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-medium)', color: 'var(--text-tertiary)', marginBottom: 'var(--spacing-sm)' }}>LO配置</label>
-                        <div className="grid grid-cols-2 gap-3">
-                            <div>
-                                <label style={{ display: 'block', fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', marginBottom: '4px' }}>LO频率 (MHz)</label>
-                                <input type="number" value={mixerConfig.loFrequency}
-                                    onChange={(e) => setMixerConfig({ ...mixerConfig, loFrequency: parseFloat(e.target.value) || 0 })}
-                                    min="10" max="26500" step="0.1" className="input-gold" />
-                                <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', marginTop: '4px' }}>范围: 10-26500 MHz</p>
                             </div>
-                            <div>
-                                <label style={{ display: 'block', fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', marginBottom: '4px' }}>LO功率 (dBm)</label>
-                                <input type="number" value={mixerConfig.loPower}
-                                    onChange={(e) => setMixerConfig({ ...mixerConfig, loPower: parseFloat(e.target.value) || 0 })}
-                                    min="-30" max="10" step="0.1" className="input-gold" />
-                                <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', marginTop: '4px' }}>范围: -30 至 +10 dBm</p>
-                            </div>
-                        </div>
-                    </div>
 
-                    {/* 转换模式 */}
-                    <div className="mb-4">
-                        <label style={{ display: 'block', fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-medium)', color: 'var(--text-tertiary)', marginBottom: 'var(--spacing-sm)' }}>转换模式</label>
-                        <select value={mixerConfig.conversionMode}
-                            onChange={(e) => setMixerConfig({ ...mixerConfig, conversionMode: e.target.value })}
-                            className="select-gold w-full">
-                            <option value="DCUP">DC-UP (下变频上边带)</option>
-                            <option value="DCDOWN">DC-DOWN (下变频下边带)</option>
-                            <option value="UP">UP (上变频上边带)</option>
-                            <option value="DOWN">DOWN (上变频下边带)</option>
-                        </select>
-                    </div>
+                            {/* LO配置 */}
+                            <div className="mb-4">
+                                <label style={{ display: 'block', fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-medium)', color: 'var(--text-tertiary)', marginBottom: 'var(--spacing-sm)' }}>LO配置</label>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label style={{ display: 'block', fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', marginBottom: '4px' }}>LO频率 (MHz)</label>
+                                        <input type="number" value={mixerConfig.loFrequency}
+                                            onChange={(e) => setMixerConfig({ ...mixerConfig, loFrequency: parseFloat(e.target.value) || 0 })}
+                                            min="10" max="26500" step="0.1" className="input-gold" />
+                                        <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', marginTop: '4px' }}>范围: 10-26500 MHz</p>
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', marginBottom: '4px' }}>LO功率 (dBm)</label>
+                                        <input type="number" value={mixerConfig.loPower}
+                                            onChange={(e) => setMixerConfig({ ...mixerConfig, loPower: parseFloat(e.target.value) || 0 })}
+                                            min="-30" max="10" step="0.1" className="input-gold" />
+                                        <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', marginTop: '4px' }}>范围: -30 至 +10 dBm</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* 转换模式 */}
+                            <div className="mb-4">
+                                <label style={{ display: 'block', fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-medium)', color: 'var(--text-tertiary)', marginBottom: 'var(--spacing-sm)' }}>转换模式</label>
+                                <select value={mixerConfig.conversionMode}
+                                    onChange={(e) => setMixerConfig({ ...mixerConfig, conversionMode: e.target.value })}
+                                    className="select-gold w-full">
+                                    <option value="DCUP">DC-UP (下变频上边带)</option>
+                                    <option value="DCDOWN">DC-DOWN (下变频下边带)</option>
+                                    <option value="UP">UP (上变频上边带)</option>
+                                    <option value="DOWN">DOWN (上变频下边带)</option>
+                                </select>
+                            </div>
+                        </>
+                    )}
+
+                    {/* 思仪3674L配置 */}
+                    {isSiyiMixer && (
+                        <>
+                            {/* Input配置 */}
+                            <div className="mb-4">
+                                <label style={{ display: 'block', fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-medium)', color: 'var(--text-tertiary)', marginBottom: 'var(--spacing-sm)' }}>Input配置（扫频）</label>
+                                <div className="grid grid-cols-3 gap-3">
+                                    <div>
+                                        <label style={{ display: 'block', fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', marginBottom: '4px' }}>起始频率 (MHz)</label>
+                                        <input type="number" value={mixerConfig.input_start_freq}
+                                            onChange={(e) => setMixerConfig({ ...mixerConfig, input_start_freq: parseFloat(e.target.value) || 0 })}
+                                            min="10" max="67000" step="1" className="input-gold" />
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', marginBottom: '4px' }}>终止频率 (MHz)</label>
+                                        <input type="number" value={mixerConfig.input_stop_freq}
+                                            onChange={(e) => setMixerConfig({ ...mixerConfig, input_stop_freq: parseFloat(e.target.value) || 0 })}
+                                            min="10" max="67000" step="1" className="input-gold" />
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', marginBottom: '4px' }}>功率 (dBm)</label>
+                                        <input type="number" value={mixerConfig.input_power}
+                                            onChange={(e) => setMixerConfig({ ...mixerConfig, input_power: parseFloat(e.target.value) || 0 })}
+                                            min="-55" max="10" step="0.1" className="input-gold" />
+                                    </div>
+                                </div>
+                                <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', marginTop: '4px' }}>频率范围: 10-67000 MHz，功率范围: -55 至 +10 dBm</p>
+                            </div>
+
+                            {/* LO配置 */}
+                            <div className="mb-4">
+                                <label style={{ display: 'block', fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-medium)', color: 'var(--text-tertiary)', marginBottom: 'var(--spacing-sm)' }}>LO配置（固定频率）</label>
+                                <div className="grid grid-cols-3 gap-3">
+                                    <div>
+                                        <label style={{ display: 'block', fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', marginBottom: '4px' }}>LO端口</label>
+                                        <select value={mixerConfig.lo_port}
+                                            onChange={(e) => setMixerConfig({ ...mixerConfig, lo_port: parseInt(e.target.value) })}
+                                            className="select-gold w-full">
+                                            <option value={1}>Port 1</option>
+                                            <option value={2}>Port 2</option>
+                                            <option value={3}>Port 3</option>
+                                            <option value={4}>Port 4</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', marginBottom: '4px' }}>LO频率 (MHz)</label>
+                                        <input type="number" value={mixerConfig.lo_freq}
+                                            onChange={(e) => setMixerConfig({ ...mixerConfig, lo_freq: parseFloat(e.target.value) || 0 })}
+                                            min="10" max="67000" step="1" className="input-gold" />
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', marginBottom: '4px' }}>LO功率 (dBm)</label>
+                                        <input type="number" value={mixerConfig.lo_power}
+                                            onChange={(e) => setMixerConfig({ ...mixerConfig, lo_power: parseFloat(e.target.value) || 0 })}
+                                            min="-55" max="10" step="0.1" className="input-gold" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Output配置 */}
+                            <div className="mb-4">
+                                <label style={{ display: 'block', fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-medium)', color: 'var(--text-tertiary)', marginBottom: 'var(--spacing-sm)' }}>Output配置（边带选择）</label>
+                                <select value={mixerConfig.sideband}
+                                    onChange={(e) => setMixerConfig({ ...mixerConfig, sideband: e.target.value })}
+                                    className="select-gold w-full">
+                                    <option value="LOW">LOW (下边带 / Difference)</option>
+                                    <option value="HIGH">HIGH (上边带 / Sum)</option>
+                                </select>
+                                <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', marginTop: '4px' }}>LOW: Output = |Input - LO|，HIGH: Output = Input + LO</p>
+                            </div>
+                        </>
+                    )}
 
                     {/* 操作按钮 */}
                     <div className="flex gap-2">

@@ -70,14 +70,24 @@ class VNAController:
             'results': []
         }
         
-        # 混频器配置（用于ZNA26的VMIX模式）
+        # 混频器配置（支持多种设备）
         self.mixer_config = {
+            # 罗德ZNA26 VMIX模式参数
             'rfPort': 1,
             'ifPort': 2,
             'loPort': 3,
             'loFrequency': 300.0,  # MHz
             'loPower': 10.0,       # dBm
-            'conversionMode': 'DCUP'
+            'conversionMode': 'DCUP',
+            
+            # 思仪3674L Scalar Mixer模式参数
+            'input_start_freq': 3e9,     # Hz (3 GHz)
+            'input_stop_freq': 4e9,      # Hz (4 GHz)
+            'input_power': -10.0,        # dBm
+            'lo_port': 3,                # Port 1-4
+            'lo_freq': 2e9,              # Hz (2 GHz)
+            'lo_power': 10.0,            # dBm
+            'sideband': 'LOW'            # LOW/HIGH
         }
         
         # 创建结果目录
