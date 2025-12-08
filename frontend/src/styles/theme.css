@@ -1,0 +1,265 @@
+/**
+ * Claude风格主题系统
+ * 定义金色与棕色调性的设计变量
+ */
+
+:root {
+    /* ========== 色彩体系 - 亮色模式 ========== */
+
+    /* 主背景 - 暖米色 */
+    --bg-primary: #FAF8F3;
+    --bg-secondary: #FFF9F0;
+    --bg-card: #FFFFFF;
+    --bg-elevated: #FEFDFB;
+
+    /* 文字颜色 */
+    --text-primary: #3E2723;
+    --text-secondary: #5D4037;
+    --text-tertiary: #8D6E63;
+    --text-disabled: #BCAAA4;
+
+    /* 强调色 - 古铜金 */
+    --accent-gold: #C9A961;
+    --accent-gold-light: #E4D4A5;
+    --accent-gold-dark: #B8954A;
+    --accent-gold-bright: #D4AF37;
+
+    /* 次要强调 - 暖棕色 */
+    --accent-brown: #8B6F47;
+    --accent-brown-light: #A68A5F;
+    --accent-brown-dark: #6B5333;
+
+    /* 功能色 */
+    --color-success: #7F8C54;
+    /* 橄榄绿 */
+    --color-warning: #B8860B;
+    /* 深金橙 */
+    --color-error: #8B4513;
+    /* 暖赭红 */
+    --color-info: #8B7355;
+    /* 驼色 */
+
+    /* 边框与分割线 */
+    --border-light: rgba(62, 39, 35, 0.08);
+    --border-medium: rgba(62, 39, 35, 0.15);
+    --border-heavy: rgba(62, 39, 35, 0.25);
+    --border-gold: #D4AF37;
+
+    /* 阴影 */
+    --shadow-color: rgba(62, 39, 35, 0.08);
+    --shadow-gold: rgba(201, 169, 97, 0.15);
+    --shadow-sm: 0 1px 3px var(--shadow-color);
+    --shadow-md: 0 4px 8px var(--shadow-color), 0 1px 2px rgba(201, 169, 97, 0.06);
+    --shadow-lg: 0 12px 24px var(--shadow-color), 0 4px 8px rgba(201, 169, 97, 0.08);
+    --shadow-xl: 0 20px 40px var(--shadow-color), 0 8px 16px rgba(201, 169, 97, 0.1);
+
+    /* 金色辉光 */
+    --glow-subtle: 0 0 8px var(--shadow-gold);
+    --glow-medium: 0 0 16px rgba(212, 175, 55, 0.3), 0 0 4px var(--border-gold);
+    --glow-strong: 0 0 24px rgba(212, 175, 55, 0.4), 0 0 8px var(--border-gold);
+
+    /* ========== 字体系统 ========== */
+
+    --font-heading: 'Noto Serif SC', 'Source Serif Pro', 'Georgia', serif;
+    --font-body: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+
+    --text-xs: 0.75rem;
+    /* 12px */
+    --text-sm: 0.875rem;
+    /* 14px */
+    --text-md: 1rem;
+    /* 16px */
+    --text-lg: 1.125rem;
+    /* 18px */
+    --text-xl: 1.25rem;
+    /* 20px */
+    --text-2xl: 1.5rem;
+    /* 24px */
+    --text-3xl: 1.875rem;
+    /* 30px */
+
+    --weight-normal: 400;
+    --weight-medium: 500;
+    --weight-semibold: 600;
+    --weight-bold: 700;
+
+    /* ========== 间距系统 ========== */
+
+    --spacing-xs: 0.25rem;
+    /* 4px */
+    --spacing-sm: 0.5rem;
+    /* 8px */
+    --spacing-md: 1rem;
+    /* 16px */
+    --spacing-lg: 1.5rem;
+    /* 24px */
+    --spacing-xl: 2rem;
+    /* 32px */
+    --spacing-2xl: 3rem;
+    /* 48px */
+
+    /* ========== 圆角 ========== */
+
+    --radius-sm: 0.375rem;
+    /* 6px */
+    --radius-md: 0.5rem;
+    /* 8px */
+    --radius-lg: 0.75rem;
+    /* 12px */
+    --radius-xl: 1rem;
+    /* 16px */
+
+    /* ========== 过渡动画 ========== */
+
+    --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-smooth: 400ms cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* ========== 功能区专用色 ========== */
+
+    /* VNA（矢网）- 黄铜金倾向 */
+    --vna-primary: var(--accent-gold);
+    --vna-hover: var(--accent-gold-light);
+    --vna-active: var(--accent-gold-dark);
+    --vna-glow: rgba(212, 175, 55, 0.25);
+
+    /* Matrix（矩阵）- 琥珀棕倾向 */
+    --matrix-primary: var(--accent-brown);
+    --matrix-hover: var(--accent-brown-light);
+    --matrix-active: var(--accent-brown-dark);
+    --matrix-glow: rgba(139, 111, 71, 0.25);
+}
+
+/* ========== 深色模式 ========== */
+
+.dark {
+    /* 主背景 - 深炭棕色 */
+    --bg-primary: #1C1410;
+    --bg-secondary: #2A201A;
+    --bg-card: #352820;
+    --bg-elevated: #403328;
+
+    /* 文字颜色 */
+    --text-primary: #E8DCC8;
+    --text-secondary: #D4C5B0;
+    --text-tertiary: #B09D84;
+    --text-disabled: #7A6C5D;
+
+    /* 强调色 - 亮金 */
+    --accent-gold: #F4D03F;
+    --accent-gold-light: #FFE57F;
+    --accent-gold-dark: #C9A93D;
+    --accent-gold-bright: #FFD700;
+
+    /* 次要强调 - 深棕 */
+    --accent-brown: #A67C52;
+    --accent-brown-light: #C39866;
+    --accent-brown-dark: #8B6239;
+
+    /* 功能色 */
+    --color-success: #9CAF4F;
+    --color-warning: #DAA520;
+    --color-error: #CD5C5C;
+    --color-info: #C19A6B;
+
+    /* 边框与分割线 */
+    --border-light: rgba(232, 220, 200, 0.08);
+    --border-medium: rgba(232, 220, 200, 0.15);
+    --border-heavy: rgba(232, 220, 200, 0.25);
+    --border-gold: #D4AF37;
+
+    /* 阴影 */
+    --shadow-color: rgba(0, 0, 0, 0.6);
+    --shadow-gold: rgba(244, 208, 63, 0.3);
+    --shadow-sm: 0 1px 3px var(--shadow-color);
+    --shadow-md: 0 4px 8px var(--shadow-color), 0 1px 2px rgba(244, 208, 63, 0.1);
+    --shadow-lg: 0 12px 24px var(--shadow-color), 0 4px 8px rgba(244, 208, 63, 0.15);
+    --shadow-xl: 0 20px 40px var(--shadow-color), 0 8px 16px rgba(244, 208, 63, 0.2);
+
+    /* 金色辉光 */
+    --glow-subtle: 0 0 12px rgba(244, 208, 63, 0.2);
+    --glow-medium: 0 0 20px rgba(244, 208, 63, 0.3), 0 0 6px var(--border-gold);
+    --glow-strong: 0 0 32px rgba(244, 208, 63, 0.4), 0 0 12px var(--border-gold);
+
+    /* VNA 深色模式 */
+    --vna-primary: #F4D03F;
+    --vna-hover: #FFE57F;
+    --vna-active: #C9A93D;
+    --vna-glow: rgba(244, 208, 63, 0.35);
+
+    /* Matrix 深色模式 */
+    --matrix-primary: #C39866;
+    --matrix-hover: #D4AA77;
+    --matrix-active: #8B6239;
+    --matrix-glow: rgba(195, 152, 102, 0.35);
+}
+
+/* ========== 基础样式重置 ========== */
+
+* {
+    box-sizing: border-box;
+    transition-property: background-color, border-color, color, box-shadow;
+    transition-duration: var(--transition-base);
+}
+
+body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    font-size: var(--text-md);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: var(--font-heading);
+    font-weight: var(--weight-semibold);
+    color: var(--text-primary);
+    line-height: 1.3;
+}
+
+/* ========== 工具类 ========== */
+
+.text-gold {
+    color: var(--accent-gold);
+}
+
+.text-brown {
+    color: var(--accent-brown);
+}
+
+.bg-gold {
+    background-color: var(--accent-gold);
+}
+
+.bg-brown {
+    background-color: var(--accent-brown);
+}
+
+.border-gold {
+    border-color: var(--border-gold);
+}
+
+.shadow-gold {
+    box-shadow: var(--glow-medium);
+}
+
+.transition-all {
+    transition: all var(--transition-base);
+}
+
+.font-heading {
+    font-family: var(--font-heading);
+}
+
+.font-mono {
+    font-family: var(--font-mono);
+}

@@ -1,7 +1,7 @@
 import { AlertTriangle } from 'lucide-react'
 
 /**
- * 功率测量Tab - 功率参数（暂不可用）
+ * 功率测量Tab - 功率参数（暂不可用） (Claude风格)
  */
 function PowerMeasurementTab() {
     const powerParameters = [
@@ -14,14 +14,29 @@ function PowerMeasurementTab() {
     return (
         <div className="space-y-4">
             {/* 警告提示 */}
-            <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md p-4">
+            <div style={{
+                backgroundColor: 'rgba(184, 134, 11, 0.08)',
+                borderColor: 'var(--color-warning)',
+                borderWidth: '1px',
+                borderStyle: 'solid',
+                borderRadius: 'var(--radius-md)',
+                padding: 'var(--spacing-md)'
+            }}>
                 <div className="flex items-start space-x-3">
-                    <AlertTriangle className="h-5 w-5 text-yellow-600 dark:text-yellow-400 flex-shrink-0 mt-0.5" />
+                    <AlertTriangle className="h-5 w-5 flex-shrink-0 mt-0.5" style={{ color: 'var(--color-warning)' }} />
                     <div>
-                        <h4 className="text-sm font-semibold text-yellow-800 dark:text-yellow-300 mb-1">
+                        <h4 style={{
+                            fontSize: 'var(--text-sm)',
+                            fontWeight: 'var(--weight-semibold)',
+                            color: 'var(--text-primary)',
+                            marginBottom: '0.25rem'
+                        }}>
                             功率测量需要功率校准
                         </h4>
-                        <p className="text-xs text-yellow-700 dark:text-yellow-400">
+                        <p style={{
+                            fontSize: 'var(--text-xs)',
+                            color: 'var(--text-secondary)'
+                        }}>
                             功率测量功能正在开发中，需要专门的功率传感器和校准步骤。
                         </p>
                     </div>
@@ -30,22 +45,39 @@ function PowerMeasurementTab() {
 
             {/* 功率参数列表（禁用状态） */}
             <div>
-                <h3 className="text-sm font-semibold text-slate-700 dark:text-gray-300 mb-3">
+                <h3 style={{
+                    fontSize: 'var(--text-sm)',
+                    fontWeight: 'var(--weight-semibold)',
+                    color: 'var(--text-secondary)',
+                    marginBottom: 'var(--spacing-md)'
+                }}>
                     功率参数
                 </h3>
-                <div className="grid grid-cols-2 gap-2 opacity-50">
+                <div className="grid grid-cols-2 gap-2" style={{ opacity: 0.5 }}>
                     {powerParameters.map((param) => (
                         <button
                             key={param.id}
                             disabled
-                            className="flex items-center space-x-2 p-3 rounded-md border border-slate-200 dark:border-gray-600 bg-slate-50 dark:bg-gray-800 cursor-not-allowed"
+                            className="flex items-center space-x-2 p-3 rounded-md border"
+                            style={{
+                                backgroundColor: 'var(--bg-secondary)',
+                                borderColor: 'var(--border-light)',
+                                cursor: 'not-allowed'
+                            }}
                             title="需要功率校准（暂不可用）"
                         >
                             <div className="flex-1 text-left min-w-0">
-                                <div className="font-semibold text-sm text-slate-600 dark:text-gray-400">
+                                <div style={{
+                                    fontWeight: 'var(--weight-semibold)',
+                                    fontSize: 'var(--text-sm)',
+                                    color: 'var(--text-tertiary)'
+                                }}>
                                     {param.name}
                                 </div>
-                                <div className="text-[10px] text-slate-400 dark:text-gray-500 truncate">
+                                <div style={{
+                                    fontSize: 'var(--text-xs)',
+                                    color: 'var(--text-disabled)'
+                                }} className="truncate">
                                     {param.description}
                                 </div>
                             </div>
@@ -55,16 +87,35 @@ function PowerMeasurementTab() {
             </div>
 
             {/* 功能说明 */}
-            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md p-4">
-                <h4 className="text-sm font-semibold text-blue-800 dark:text-blue-300 mb-2">
+            <div style={{
+                backgroundColor: 'rgba(127, 140, 84, 0.08)',
+                borderColor: 'var(--color-info)',
+                borderWidth: '1px',
+                borderStyle: 'solid',
+                borderRadius: 'var(--radius-md)',
+                padding: 'var(--spacing-md)'
+            }}>
+                <h4 style={{
+                    fontSize: 'var(--text-sm)',
+                    fontWeight: 'var(--weight-semibold)',
+                    color: 'var(--text-primary)',
+                    marginBottom: 'var(--spacing-sm)'
+                }}>
                     功率测量要求
                 </h4>
-                <ul className="text-xs text-blue-700 dark:text-blue-400 space-y-1">
+                <ul className="space-y-1" style={{
+                    fontSize: 'var(--text-xs)',
+                    color: 'var(--text-secondary)'
+                }}>
                     <li>✓ 专门的功率传感器</li>
                     <li>✓ 功率校准步骤</li>
                     <li>✓ VNA设备支持功率测量</li>
                 </ul>
-                <p className="text-xs text-blue-600 dark:text-blue-400 mt-3">
+                <p style={{
+                    fontSize: 'var(--text-xs)',
+                    color: 'var(--text-tertiary)',
+                    marginTop: 'var(--spacing-md)'
+                }}>
                     该功能将在后续版本中实现。
                 </p>
             </div>

@@ -6,7 +6,7 @@ import MixerMeasurementTab from './tabs/MixerMeasurementTab'
 import PowerMeasurementTab from './tabs/PowerMeasurementTab'
 
 /**
- * VNA测量设置统一组件 - Tab模式
+ * VNA测量设置统一组件 - Tab模式 (Claude风格)
  * 整合基本参数、混频器测量和功率测量
  */
 function VNAMeasurementSettings() {
@@ -25,7 +25,7 @@ function VNAMeasurementSettings() {
         if (savedTab && ['basic', 'mixer', 'power'].includes(savedTab)) {
             setActiveMeasurementTab(savedTab)
         }
-    }, [])
+    }, [setActiveMeasurementTab])
 
     // 保存Tab选择到localStorage
     useEffect(() => {
@@ -37,22 +37,19 @@ function VNAMeasurementSettings() {
     // Tab切换时处理参数冲突
     useEffect(() => {
         if (activeMeasurementTab === 'basic') {
-            // 基本参数Tab：只保留S参数
             setSelectedParameters(prev => prev.filter(p =>
                 ['S11', 'S12', 'S21', 'S22'].includes(p)
             ))
         } else if (activeMeasurementTab === 'mixer') {
-            // 混频器Tab：只保留SC参数
             setSelectedParameters(prev => prev.filter(p =>
                 p.startsWith('SC')
             ))
         } else if (activeMeasurementTab === 'power') {
-            // 功率Tab：只保留功率参数
             setSelectedParameters(prev => prev.filter(p =>
                 p.endsWith('PWR') || p.endsWith('Pwr')
             ))
         }
-    }, [activeMeasurementTab])
+    }, [activeMeasurementTab, setSelectedParameters])
 
     // 处理Tab切换（带动画）
     const handleTabChange = (newTab) => {
@@ -66,13 +63,17 @@ function VNAMeasurementSettings() {
     }
 
     return (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-slate-200 dark:border-gray-700">
+        <div className="card-vna">
             {/* Tab Header */}
-            <div className="border-b border-slate-200 dark:border-gray-700">
+            <div className="border-b" style={{ borderColor: 'var(--border-light)' }}>
                 <div className="flex items-center justify-between px-5 pt-4 pb-2">
                     <div className="flex items-center space-x-2">
-                        <List className="h-5 w-5 text-emerald-600" />
-                        <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">测量设置</h2>
+                        <List className="h-5 w-5" style={{ color: 'var(--vna-primary)' }} />
+                        <h2 className="font-heading" style={{
+                            fontSize: 'var(--text-xl)',
+                            fontWeight: 'var(--weight-semibold)',
+                            color: 'var(--text-primary)'
+                        }}>测量设置</h2>
                     </div>
                     {/* 快捷按钮组 */}
                     <div className="flex gap-1">
@@ -80,10 +81,24 @@ function VNAMeasurementSettings() {
                             <button
                                 key={tab.id}
                                 onClick={() => handleTabChange(tab.id)}
-                                className={`w-7 h-7 text-xs font-semibold rounded transition-colors ${activeMeasurementTab === tab.id
-                                        ? 'bg-emerald-600 text-white'
-                                        : 'bg-slate-100 dark:bg-gray-700 text-slate-600 dark:text-gray-400 hover:bg-slate-200 dark:hover:bg-gray-600'
-                                    }`}
+                                className="w-7 h-7 text-xs font-semibold rounded"
+                                style={{
+                                    backgroundColor: activeMeasurementTab === tab.id ? 'var(--vna-primary)' : 'var(--bg-secondary)',
+                                    color: activeMeasurementTab === tab.id ? '#FFF' : 'var(--text-tertiary)',
+                                    transition: 'all var(--transition-base)',
+                                    boxShadow: activeMeasurementTab === tab.id ? 'var(--glow-subtle)' : 'none',
+                                    cursor: 'pointer'
+                                }}
+                                onMouseEnter={(e) => {
+                                    if (activeMeasurementTab !== tab.id) {
+                                        e.target.style.backgroundColor = 'var(--bg-elevated)'
+                                    }
+                                }}
+                                onMouseLeave={(e) => {
+                                    if (activeMeasurementTab !== tab.id) {
+                                        e.target.style.backgroundColor = 'var(--bg-secondary)'
+                                    }
+                                }}
                                 title={tab.label}
                             >
                                 {index + 1}
@@ -93,33 +108,32 @@ function VNAMeasurementSettings() {
                 </div>
 
                 {/* Tab Navigation */}
-                <div className="flex px-5">
+                <div className="tab-nav">
                     {tabs.map((tab) => (
                         <button
                             key={tab.id}
                             onClick={() => handleTabChange(tab.id)}
-                            className={`px-4 py-2 font-medium text-sm transition-all relative ${activeMeasurementTab === tab.id
-                                ? 'text-emerald-600 dark:text-emerald-400'
-                                : 'text-slate-600 dark:text-gray-400 hover:text-emerald-500'
-                                }`}
+                            className={`tab-item ${activeMeasurementTab === tab.id ? 'tab-item-active' : ''}`}
                         >
                             <div className="flex flex-col items-center">
                                 <span>{tab.label}</span>
-                                <span className="text-[10px] text-slate-400 dark:text-gray-500">
+                                <span style={{
+                                    fontSize: 'var(--text-xs)',
+                                    color: 'var(--text-tertiary)'
+                                }}>
                                     {tab.description}
                                 </span>
                             </div>
-                            {/* Active indicator with slide animation */}
-                            {activeMeasurementTab === tab.id && (
-                                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-emerald-600 dark:bg-emerald-400 transition-all duration-300" />
-                            )}
                         </button>
                     ))}
                 </div>
             </div>
 
             {/* Tab Content with fade-in animation */}
-            <div className={`p-5 transition-opacity duration-200 ${isTabChanging ? 'opacity-0' : 'opacity-100'}`}>
+            <div className="p-5" style={{
+                opacity: isTabChanging ? 0 : 1,
+                transition: 'opacity var(--transition-base)'
+            }}>
                 {activeMeasurementTab === 'basic' && <BasicParametersTab />}
                 {activeMeasurementTab === 'mixer' && <MixerMeasurementTab />}
                 {activeMeasurementTab === 'power' && <PowerMeasurementTab />}

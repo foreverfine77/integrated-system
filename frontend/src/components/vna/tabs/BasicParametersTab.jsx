@@ -2,12 +2,11 @@ import { CheckSquare, Square } from 'lucide-react'
 import { useVNA } from '../../../contexts/VNAContext'
 
 /**
- * 基本参数Tab - S参数测量
+ * 基本参数Tab - S参数测量 (Claude风格)
  */
 function BasicParametersTab() {
     const { selectedParameters, setSelectedParameters } = useVNA()
 
-    // S参数列表
     const sParameters = [
         { id: 'S11', name: 'S11', description: '输入反射系数' },
         { id: 'S12', name: 'S12', description: '反向传输系数' },
@@ -30,11 +29,21 @@ function BasicParametersTab() {
     return (
         <div className="space-y-4">
             <div className="flex items-center justify-between">
-                <h3 className="text-sm font-semibold text-slate-700 dark:text-gray-300">
+                <h3 style={{
+                    fontSize: 'var(--text-sm)',
+                    fontWeight: 'var(--weight-semibold)',
+                    color: 'var(--text-secondary)'
+                }}>
                     S参数
                 </h3>
-                <span className="text-xs text-slate-500 dark:text-gray-400">
-                    已选择 <span className="font-semibold text-emerald-600">{selectedCount}</span> 个
+                <span style={{
+                    fontSize: 'var(--text-xs)',
+                    color: 'var(--text-tertiary)'
+                }}>
+                    已选择 <span style={{
+                        fontWeight: 'var(--weight-semibold)',
+                        color: 'var(--vna-primary)'
+                    }}>{selectedCount}</span> 个
                 </span>
             </div>
 
@@ -45,24 +54,47 @@ function BasicParametersTab() {
                         <button
                             key={param.id}
                             onClick={() => toggleParameter(param.id)}
-                            className={`flex items-center space-x-2 p-3 rounded-md border transition-all ${isSelected
-                                    ? 'bg-emerald-50 dark:bg-emerald-900/30 border-emerald-400 dark:border-emerald-600 shadow-sm'
-                                    : 'bg-white dark:bg-gray-700 border-slate-200 dark:border-gray-600 hover:border-emerald-300 dark:hover:border-emerald-500 hover:bg-emerald-50/30 dark:hover:bg-emerald-900/20'
-                                }`}
+                            className="flex items-center space-x-2 p-3 rounded-md border"
+                            style={{
+                                backgroundColor: isSelected ? 'rgba(201, 169, 97, 0.08)' : 'var(--bg-card)',
+                                borderColor: isSelected ? 'var(--vna-primary)' : 'var(--border-medium)',
+                                transition: 'all var(--transition-base)',
+                                cursor: 'pointer',
+                                boxShadow: isSelected ? 'var(--glow-subtle)' : 'var(--shadow-sm)'
+                            }}
+                            onMouseEnter={(e) => {
+                                if (!isSelected) {
+                                    e.currentTarget.style.borderColor = 'var(--vna-hover)'
+                                    e.currentTarget.style.backgroundColor = 'rgba(201, 169, 97, 0.03)'
+                                }
+                            }}
+                            onMouseLeave={(e) => {
+                                if (!isSelected) {
+                                    e.currentTarget.style.borderColor = 'var(--border-medium)'
+                                    e.currentTarget.style.backgroundColor = 'var(--bg-card)'
+                                }
+                            }}
                             title={param.description}
                         >
                             <div className="flex-shrink-0">
                                 {isSelected ? (
-                                    <CheckSquare className="h-4 w-4 text-emerald-600" />
+                                    <CheckSquare className="h-4 w-4" style={{ color: 'var(--vna-primary)' }} />
                                 ) : (
-                                    <Square className="h-4 w-4 text-slate-400 dark:text-gray-500" />
+                                    <Square className="h-4 w-4" style={{ color: 'var(--text-tertiary)' }} />
                                 )}
                             </div>
                             <div className="flex-1 text-left min-w-0">
-                                <div className="font-semibold text-sm text-slate-800 dark:text-gray-200">
+                                <div style={{
+                                    fontWeight: 'var(--weight-semibold)',
+                                    fontSize: 'var(--text-sm)',
+                                    color: 'var(--text-primary)'
+                                }}>
                                     {param.name}
                                 </div>
-                                <div className="text-[10px] text-slate-500 dark:text-gray-400 truncate">
+                                <div style={{
+                                    fontSize: 'var(--text-xs)',
+                                    color: 'var(--text-tertiary)'
+                                }} className="truncate">
                                     {param.description}
                                 </div>
                             </div>
@@ -71,8 +103,18 @@ function BasicParametersTab() {
                 })}
             </div>
 
-            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md p-3">
-                <p className="text-xs text-blue-800 dark:text-blue-300">
+            <div style={{
+                backgroundColor: 'rgba(127, 140, 84, 0.08)',
+                borderColor: 'var(--color-info)',
+                borderWidth: '1px',
+                borderStyle: 'solid',
+                borderRadius: 'var(--radius-md)',
+                padding: 'var(--spacing-md)'
+            }}>
+                <p style={{
+                    fontSize: 'var(--text-xs)',
+                    color: 'var(--text-secondary)'
+                }}>
                     <strong>提示：</strong>基本S参数测量适用于常规双端口网络分析。
                 </p>
             </div>

@@ -10,7 +10,7 @@ import ThemeToggle from './components/ThemeToggle'
 import { useApp } from './contexts/AppContext'
 
 /**
- * 主应用内容组件
+ * 主应用内容组件 (Claude风格)
  */
 function AppContent() {
   const { addLog } = useApp()
@@ -18,59 +18,80 @@ function AppContent() {
 
   return (
     <ErrorBoundary addLog={addLog}>
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-gray-900 dark:to-gray-800">
+      <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-primary)' }}>
         {/* 顶部标题栏 */}
-        <header className="bg-white dark:bg-gray-800 shadow-md border-b border-slate-200 dark:border-gray-700">
+        <header style={{
+          backgroundColor: 'var(--bg-card)',
+          boxShadow: 'var(--shadow-md)',
+          borderBottom: '1px solid var(--border-light)'
+        }}>
           <div className="container mx-auto px-6 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
-                <SeparatorHorizontal className="h-9 w-9 text-slate-700 dark:text-gray-300" />
+                <SeparatorHorizontal className="h-9 w-9" style={{ color: 'var(--accent-gold)' }} />
                 <div>
-                  <h1 className="text-2xl font-semibold text-slate-800 dark:text-gray-100">
+                  <h1 className="font-heading" style={{
+                    fontSize: 'var(--text-2xl)',
+                    fontWeight: 'var(--weight-semibold)',
+                    color: 'var(--text-primary)'
+                  }}>
                     多通道系统测试软件
                   </h1>
-                  <p className="text-sm text-slate-500 dark:text-gray-400">Multichannel Test System</p>
+                  <p style={{
+                    fontSize: 'var(--text-sm)',
+                    color: 'var(--text-tertiary)'
+                  }}>Multichannel Test System</p>
                 </div>
               </div>
 
-              <div className="flex items-center space-x-2 text-sm text-slate-600 dark:text-gray-400">
+              <div className="flex items-center space-x-2" style={{
+                fontSize: 'var(--text-sm)',
+                color: 'var(--text-tertiary)'
+              }}>
                 <ThemeToggle />
-                <div className="px-3 py-1 bg-slate-100 dark:bg-gray-700 dark:text-gray-300 rounded-md">v1.0.1</div>
+                <div style={{
+                  padding: '0.25rem 0.75rem',
+                  backgroundColor: 'var(--bg-secondary)',
+                  borderRadius: 'var(--radius-md)',
+                  color: 'var(--text-secondary)'
+                }}>v1.0.1</div>
               </div>
             </div>
           </div>
         </header>
 
         {/* 标签页导航 */}
-        <div className="bg-white dark:bg-gray-800 border-b border-slate-200 dark:border-gray-700 shadow-sm">
+        <div className="tab-nav" style={{
+          backgroundColor: 'var(--bg-card)',
+          borderBottom: '1px solid var(--border-light)',
+          boxShadow: 'var(--shadow-sm)'
+        }}>
           <div className="container mx-auto px-6">
             <div className="flex space-x-1">
               <button
                 onClick={() => setActiveTab('matrix')}
-                className={`
-                  flex items-center space-x-2 px-6 py-3 font-medium transition-all
-                  ${activeTab === 'matrix'
-                    ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/20'
-                    : 'text-slate-600 dark:text-gray-400 hover:text-slate-800 dark:hover:text-gray-200 hover:bg-slate-50 dark:hover:bg-gray-700'
-                  }
-                `}
+                className={`tab-item ${activeTab === 'matrix' ? 'tab-item-active' : ''}`}
+                style={{
+                  color: activeTab === 'matrix' ? 'var(--matrix-primary)' : 'var(--text-secondary)'
+                }}
               >
-                <Shuffle className="h-5 w-5" />
-                <span>矩阵开关控制</span>
+                <div className="flex items-center space-x-2">
+                  <Shuffle className="h-5 w-5" />
+                  <span>矩阵开关控制</span>
+                </div>
               </button>
 
               <button
                 onClick={() => setActiveTab('vna')}
-                className={`
-                  flex items-center space-x-2 px-6 py-3 font-medium transition-all
-                  ${activeTab === 'vna'
-                    ? 'text-emerald-600 dark:text-emerald-400 border-b-2 border-emerald-600 dark:border-emerald-400 bg-emerald-50 dark:bg-emerald-900/20'
-                    : 'text-slate-600 dark:text-gray-400 hover:text-slate-800 dark:hover:text-gray-200 hover:bg-slate-50 dark:hover:bg-gray-700'
-                  }
-                `}
+                className={`tab-item ${activeTab === 'vna' ? 'tab-item-active' : ''}`}
+                style={{
+                  color: activeTab === 'vna' ? 'var(--vna-primary)' : 'var(--text-secondary)'
+                }}
               >
-                <Activity className="h-5 w-5" />
-                <span>矢量网络分析仪</span>
+                <div className="flex items-center space-x-2">
+                  <Activity className="h-5 w-5" />
+                  <span>矢量网络分析仪</span>
+                </div>
               </button>
             </div>
           </div>
@@ -87,8 +108,15 @@ function AppContent() {
         </main>
 
         {/* 底部信息栏 */}
-        <footer className="bg-white dark:bg-gray-800 border-t border-slate-200 dark:border-gray-700 mt-8">
-          <div className="container mx-auto px-6 py-3 text-center text-sm text-slate-500 dark:text-gray-400">
+        <footer style={{
+          backgroundColor: 'var(--bg-card)',
+          borderTop: '1px solid var(--border-light)',
+          marginTop: '2rem'
+        }}>
+          <div className="container mx-auto px-6 py-3 text-center" style={{
+            fontSize: 'var(--text-sm)',
+            color: 'var(--text-tertiary)'
+          }}>
             多通道系统测试软件 © 2025 - 矩阵开关控制 & 矢量网络分析仪测量
           </div>
         </footer>
