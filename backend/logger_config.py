@@ -109,7 +109,7 @@ def setup_logger(name='system', log_dir='logs', max_bytes=10*1024*1024, backup_c
         backupCount=backup_count,
         encoding='utf-8'
     )
-    rotating_handler.setLevel(logging.INFO)
+    rotating_handler.setLevel(logging.DEBUG)
     rotating_handler.setFormatter(file_formatter)
     logger.addHandler(rotating_handler)
     
@@ -131,13 +131,12 @@ def setup_logger(name='system', log_dir='logs', max_bytes=10*1024*1024, backup_c
     error_handler.setFormatter(file_formatter)
     logger.addHandler(error_handler)
     
-    # 记录会话开始
-    logger.info("=" * 80)
-    logger.info(f"新会话开始 - 会话ID: {session_time}")
-    logger.info(f"日志文件: {current_log_file}")
-    logger.info("=" * 80)
+    # 记录会话开始（精简版）
+    logger.info(f"会话启动 [{session_time}]")
     
     return logger
+
+
 
 
 def log_session_separator(logger, message=""):

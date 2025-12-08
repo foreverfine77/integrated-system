@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react'
 import VNAConnection from './vna/VNAConnection'
-import VNAParameters from './vna/VNAParameters'
+import VNAMeasurementSettings from './vna/VNAMeasurementSettings'
 import VNAMeasurement from './vna/VNAMeasurement'
 import VNAProgress from './vna/VNAProgress'
-import VNAMixerConfig from './vna/VNAMixerConfig'
 import Toast from './common/Toast'
 import { vnaAPI, handleAPIError } from '../services/api'
 import { useApp } from '../contexts/AppContext'
@@ -196,7 +195,7 @@ function VNAModule() {
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* 左侧：设备连接和参数选择 */}
+        {/* 左侧：设备连接和测量设置 */}
         <div className="lg:col-span-1 space-y-6">
           <VNAConnection
             selectedDevice={selectedDevice}
@@ -205,13 +204,7 @@ function VNAModule() {
             addLog={addLog}
           />
 
-          <VNAParameters />
-
-          <VNAMixerConfig
-            isConnected={isConnected}
-            deviceType={selectedDevice?.id}
-            addLog={addLog}
-          />
+          <VNAMeasurementSettings />
         </div>
 
         {/* 中间：测量进度和结果 */}

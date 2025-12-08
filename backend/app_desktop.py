@@ -7,16 +7,27 @@ from flask import Flask, request, jsonify, send_from_directory, send_file
 from flask_cors import CORS
 import os
 import sys
-import logging
 from datetime import datetime
 import threading
 import time
 import webview
 
-# 导入矩阵开关模块
+# !!重要!! 必须先配置日志系统，再导入控制器
+# 因为控制器在导入时就会获取 logger 实例
+from logger_config import setup_logger, log_session_separator
+
+# 配置改进的日志系统（在导入控制器之前）
+logger = setup_logger(
+    name='multi_channel_system',
+    log_dir='logs',
+    max_bytes=10*1024*1024,  # 10MB per file
+    backup_count=20  # Keep 20 backup files
+)
+
+# 导入矩阵开关模块（logger已配置好）
 from matrix_controller import MatrixController
 
-# 导入网络分析仪模块
+# 导入网络分析仪模块（logger已配置好）
 from vna_controller import VNAController
 
 # 计算静态目录（兼容 PyInstaller）
@@ -32,18 +43,6 @@ STATIC_FOLDER = os.path.join(BASE_PATH, "dist")
 # 创建Flask应用
 app = Flask(__name__, static_folder=STATIC_FOLDER, static_url_path="")
 CORS(app)
-
-# 配置日志
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.StreamHandler(),  # 终端输出
-        logging.FileHandler('system.log', encoding='utf-8')  # 文件保存
-    ]
-)
-
-logger = logging.getLogger(__name__)
 
 # 创建控制器实例
 matrix_controller = MatrixController()
@@ -151,8 +150,7 @@ def start_flask_server(port=5000):
     """在后台线程启动 Flask 服务器（使用 Waitress WSGI 服务器）"""
     try:
         from waitress import serve
-        logger.info("使用 Waitress WSGI 服务器启动")
-        logger.info(f"服务地址: http://127.0.0.1:{port}")
+        logger.info(f"后端服务启动 http://127.0.0.1:{port}")
         # 使用 waitress 服务器，适合生产环境
         serve(app, host='127.0.0.1', port=port, threads=6, _quiet=True)
     except Exception as e:
@@ -161,26 +159,18 @@ def start_flask_server(port=5000):
         traceback.print_exc()
 
 if __name__ == '__main__':
-    logger.info("=" * 70)
-    logger.info("多通道系统测试软件 - 桌面版启动")
-    logger.info("=" * 70)
-    logger.info("模块: 矩阵开关控制 + 矢量网络分析仪测量")
+    logger.info("多通道系统测试软件 v1.0.1 启动")
     
     os.makedirs('results', exist_ok=True)
     
     port = int(os.environ.get('PORT', 5000))
     server_url = f"http://127.0.0.1:{port}"
     
-    logger.info(f"后端服务: {server_url}")
-    logger.info("=" * 70)
-    
     server_thread = threading.Thread(target=start_flask_server, args=(port,), daemon=True)
     server_thread.start()
     
-    logger.info("等待服务器启动...")
     time.sleep(2)
     
-    logger.info("创建桌面窗口...")
     try:
         window = webview.create_window(
             title='多通道系统测试软件 v1.0.1',
@@ -192,8 +182,7 @@ if __name__ == '__main__':
             min_size=(1200, 800)
         )
         
-        logger.info("应用启动成功")
-        logger.info("=" * 70)
+        logger.info("应用窗口已打开")
         webview.start()
         
     except Exception as e:
@@ -202,3 +191,4 @@ if __name__ == '__main__':
         traceback.print_exc()
     
     logger.info("应用已关闭")
+

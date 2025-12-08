@@ -9,9 +9,7 @@ import socket
 import re
 import logging
 
-# 配置日志
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('multi_channel_system')
 
 class NetworkAnalyzerBase(ABC):
     """网络分析仪基类"""

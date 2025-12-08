@@ -22,6 +22,20 @@ export function VNAProvider({ children }) {
     const [startFrequency, setStartFrequency] = useState(500)
     const [stopFrequency, setStopFrequency] = useState(2500)
 
+    // 混频器配置
+    const [mixerConfig, setMixerConfig] = useState({
+        rfPort: 1,
+        ifPort: 2,
+        loPort: 3,
+        loFrequency: 300,  // MHz
+        loPower: 10,       // dBm
+        conversionMode: 'DCUP'
+    })
+
+    // 当前激活的测量Tab
+    const [activeMeasurementTab, setActiveMeasurementTab] = useState('basic') // 'basic' | 'mixer' | 'power'
+
+
     const value = {
         selectedDevice,
         setSelectedDevice,
@@ -47,6 +61,12 @@ export function VNAProvider({ children }) {
         setStartFrequency,
         stopFrequency,
         setStopFrequency,
+        // 混频器配置
+        mixerConfig,
+        setMixerConfig,
+        // Tab状态
+        activeMeasurementTab,
+        setActiveMeasurementTab,
     }
 
     return (
