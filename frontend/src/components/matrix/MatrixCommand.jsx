@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { Terminal, Send } from 'lucide-react'
 import { useApp } from '../../contexts/AppContext'
 import { useMatrix } from '../../contexts/MatrixContext'
-import { matrixAPI, handleAPIError } from '../../services/api'
+import { matrixAPI } from '../../services/api'
+import { useAPICall } from '../../hooks/useAPICall'
 
 /**
  * 命令面板组件 (Claude风格 - 琥珀棕倾向)
@@ -10,8 +11,11 @@ import { matrixAPI, handleAPIError } from '../../services/api'
 function CommandPanel() {
   const { addLog } = useApp()
   const { isConnected } = useMatrix()
+
+  // 使用useAPICall自动管理sending状态
+  const { isLoading: sending, execute } = useAPICall()
+
   const [command, setCommand] = useState('')
-  const [sending, setSending] = useState(false)
   const [commandHistory, setCommandHistory] = useState([])
 
   const sendCommand = async () => {
@@ -21,21 +25,22 @@ function CommandPanel() {
       return
     }
 
-    setSending(true)
     try {
-      const response = await matrixAPI.sendCommand(command.trim())
-      if (response.data.success) {
-        addLog(`命令发送成功: ${command}`, 'success')
-        addLog(`设备响应: ${response.data.response}`, 'info')
-        setCommandHistory(prev => [command, ...prev.slice(0, 9)])
-        setCommand('')
-      } else {
-        addLog(`命令执行失败: ${response.data.message}`, 'error')
-      }
-    } catch (error) {
-      handleAPIError(error, addLog, 'system')
-    } finally {
-      setSending(false)
+      await execute(
+        () => matrixAPI.sendCommand(cmd),
+        {
+          addLog,
+          source: 'matrix',
+          onSuccess: (data) => {
+            addLog(`命令发送成功: ${cmd}`, 'success')
+            addLog(`设备响应: ${data.response}`, 'info')
+            setCommandHistory(prev => [cmd, ...prev.slice(0, 9)])
+            setCommand('')
+          }
+        }
+      )
+    } catch {
+      // 错误已处理
     }
   }
 

@@ -45,7 +45,7 @@ function Toast({ message, type = 'info', onClose, duration = 3000 }) {
     const style = styles[type] || styles.info
 
     return (
-        <div className="toast fixed top-4 right-4 z-50 flex items-center gap-3 animate-slide-in-right"
+        <div className="toast fixed top-20 right-4 z-50 flex items-center gap-3 animate-slide-in-right"
             style={{
                 backgroundColor: style.bg,
                 borderColor: style.border,

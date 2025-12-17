@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
 import { Wifi, WifiOff, RefreshCw, Power, Clock, X } from 'lucide-react'
 import Toast from '../common/Toast'
-import { vnaAPI, handleAPIError } from '../../services/api'
+import { vnaAPI } from '../../services/api'
+import { useAPICall } from '../../hooks/useAPICall'
+import { callAPI } from '../../services/apiWrapper'
 
 /**
  * VNA设备连接组件 (Claude风格)
@@ -9,7 +11,10 @@ import { vnaAPI, handleAPIError } from '../../services/api'
 function VNAConnection({ selectedDevice, onDeviceSelect, onConnectionChange, addLog }) {
     const [devices, setDevices] = useState([])
     const [isConnected, setIsConnected] = useState(false)
-    const [isLoading, setIsLoading] = useState(false)
+
+    // 使用useAPICall自动管理loading状态
+    const { isLoading, execute } = useAPICall()
+
     const [ipAddress, setIpAddress] = useState('169.254.143.122')
     const [port, setPort] = useState('5025')
     const [selectedDeviceType, setSelectedDeviceType] = useState('rohde-zna26')
@@ -19,10 +24,17 @@ function VNAConnection({ selectedDevice, onDeviceSelect, onConnectionChange, add
 
     const fetchDevices = async () => {
         try {
-            const response = await vnaAPI.getDevices()
-            setDevices(response.data)
-        } catch (error) {
-            handleAPIError(error, addLog, 'vna')
+            await execute(
+                () => vnaAPI.getDevices(),
+                {
+                    addLog,
+                    source: 'vna',
+                    validateResponse: false,
+                    onSuccess: (data) => setDevices(data)
+                }
+            )
+        } catch {
+            // 错误已处理
         }
     }
 
@@ -65,41 +77,47 @@ function VNAConnection({ selectedDevice, onDeviceSelect, onConnectionChange, add
     }
 
     const handleConnect = async () => {
-        setIsLoading(true)
+        const portNum = parseInt(port)
+
         try {
-            const portNum = parseInt(port)
-            const response = await vnaAPI.connect({ device_type: selectedDeviceType, ip_address: ipAddress, port: portNum })
-            if (response.data.success) {
-                setIsConnected(true)
-                onConnectionChange?.(true)
-                onDeviceSelect({ id: selectedDeviceType, ipAddress, port: portNum })
-                saveIpToHistory(ipAddress, portNum)
-                addLog(`成功连接到 ${ipAddress}:${portNum}`, 'success', 'vna')
-                setToast({ message: '设备连接成功！', type: 'success' })
-            } else {
-                const shortMsg = response.data.message?.split('，')[0] || response.data.message
-                addLog(`连接失败: ${shortMsg}`, 'error', 'vna')
-                setToast({ message: `连接失败: ${shortMsg}`, type: 'error', duration: 5000 })
-            }
-        } catch (error) {
-            addLog('连接错误，请检查网络或设备状态', 'error', 'vna')
-            setToast({ message: '连接错误，请检查网络或设备状态', type: 'error', duration: 5000 })
-        } finally {
-            setIsLoading(false)
+            await execute(
+                () => vnaAPI.connect({ device_type: selectedDeviceType, ip_address: ipAddress, port: portNum }),
+                {
+                    successMessage: '设备连接成功！',
+                    addLog,
+                    source: 'vna',
+                    showToast: setToast,
+                    onSuccess: () => {
+                        setIsConnected(true)
+                        onConnectionChange?.(true)
+                        onDeviceSelect({ id: selectedDeviceType, ipAddress, port: portNum })
+                        saveIpToHistory(ipAddress, portNum)
+                    }
+                }
+            )
+        } catch {
+            // 错误已由execute处理
         }
     }
 
     const handleDisconnect = async () => {
         try {
-            const response = await vnaAPI.disconnect()
-            if (response.data.success) {
-                setIsConnected(false)
-                onConnectionChange?.(false)
-                onDeviceSelect(null)
-                addLog('已断开设备连接', 'info', 'vna')
-            }
-        } catch (error) {
-            addLog('断开连接失败', 'error', 'vna')
+            await callAPI(
+                () => vnaAPI.disconnect(),
+                {
+                    successMessage: '已断开设备连接',
+                    addLog,
+                    source: 'vna',
+                    showToast: setToast,
+                    onSuccess: () => {
+                        setIsConnected(false)
+                        onConnectionChange?.(false)
+                        onDeviceSelect(null)
+                    }
+                }
+            )
+        } catch {
+            // 错误已处理
         }
     }
 

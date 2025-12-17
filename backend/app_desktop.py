@@ -123,6 +123,119 @@ def stop_vna_measurement():
 def vna_measurement_status():
     return vna_controller.get_measurement_status()
 
+@app.route('/api/vna/mixer-config', methods=['GET'])
+def get_mixer_config():
+    """获取混频器配置"""
+    try:
+        return jsonify({
+            'success': True,
+            'config': vna_controller.mixer_config
+        })
+    except Exception as e:
+        logger.error(f"获取混频器配置失败: {str(e)}")
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/api/vna/mixer-config', methods=['POST'])
+def set_mixer_config():
+    """设置混频器配置（支持罗德ZNA26和思仪3674L）"""
+    try:
+        data = request.json
+        
+        # 检查设备连接状态
+        if not vna_controller.is_connected():
+            return jsonify({'success': False, 'message': '请先连接VNA设备'}), 400
+        
+        device_type = vna_controller.device_type
+        logger.info(f"设置混频器配置 - 设备类型: {device_type}")
+        
+        errors = []
+        
+        # 根据设备类型进行不同的验证和配置
+        if device_type == 'rohde-zna26':
+            # 罗德ZNA26 - VMIX模式验证
+            ports = [data.get('rfPort'), data.get('ifPort'), data.get('loPort')]
+            if len(set(ports)) != len(ports):
+                errors.append('RF、IF、LO端口不能重复')
+            
+            lo_freq = data.get('loFrequency', 0)
+            if not (10 <= lo_freq <= 26500):
+                errors.append('LO频率范围: 10-26500 MHz')
+            
+            lo_power = data.get('loPower', 0)
+            if not (-30 <= lo_power <= 10):
+                errors.append('LO功率范围: -30 至 +10 dBm')
+            
+            if errors:
+                return jsonify({'success': False, 'errors': errors}), 400
+            
+            # 更新罗德配置
+            vna_controller.mixer_config.update(data)
+            logger.info(f"罗德ZNA26混频器配置已更新: {vna_controller.mixer_config}")
+            
+        elif device_type == 'siyi-3674l':
+            # 思仪3674L - Scalar Mixer模式验证
+            input_start = data.get('input_start_freq', 0)  # Hz
+            input_stop = data.get('input_stop_freq', 0)    # Hz
+            
+            if not (10e6 <= input_start <= 67e9):
+                errors.append('Input起始频率范围: 10 MHz - 67 GHz')
+            if not (10e6 <= input_stop <= 67e9):
+                errors.append('Input终止频率范围: 10 MHz - 67 GHz')
+            if input_start >= input_stop:
+                errors.append('Input起始频率必须小于终止频率')
+            
+            input_power = data.get('input_power', 0)
+            if not (-55 <= input_power <= 10):
+                errors.append('Input功率范围: -55 至 +10 dBm')
+            
+            lo_port = data.get('lo_port', 0)
+            if not (1 <= lo_port <= 4):
+                errors.append('LO端口范围: 1-4')
+            
+            lo_freq = data.get('lo_freq', 0)  # Hz
+            if not (10e6 <= lo_freq <= 67e9):
+                errors.append('LO频率范围: 10 MHz - 67 GHz')
+            
+            lo_power = data.get('lo_power', 0)
+            if not (-55 <= lo_power <= 10):
+                errors.append('LO功率范围: -55 至 +10 dBm')
+            
+            sideband = data.get('sideband', 'LOW')
+            if sideband not in ['LOW', 'HIGH']:
+                errors.append('边带选择: LOW 或 HIGH')
+            
+            if errors:
+                return jsonify({'success': False, 'errors': errors}), 400
+            
+            # 更新思仪配置
+            vna_controller.mixer_config.update(data)
+            logger.info(f"思仪3674L混频器配置已更新: {vna_controller.mixer_config}")
+            
+            # 调用思仪设备驱动配置混频器
+            if vna_controller.device_driver and hasattr(vna_controller.device_driver, 'configure_mixer_mode'):
+                success, message = vna_controller.device_driver.configure_mixer_mode(data)
+                if not success:
+                    logger.error(f"思仪设备混频器配置失败: {message}")
+                    return jsonify({'success': False, 'message': message}), 500
+                logger.info(f"思仪设备混频器配置成功: {message}")
+            else:
+                logger.warning("设备驱动不支持configure_mixer_mode方法")
+                return jsonify({'success': False, 'message': '设备驱动不支持混频器配置'}), 400
+        
+        else:
+            return jsonify({'success': False, 'message': f'设备 {device_type} 不支持混频器模式'}), 400
+        
+        return jsonify({
+            'success': True,
+            'message': '混频器配置已更新并应用到设备',
+            'config': vna_controller.mixer_config
+        })
+    except Exception as e:
+        logger.error(f"设置混频器配置失败: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'message': str(e)}), 500
+
 # ==================== 状态查询 API ====================
 # 注意：前端应使用轮询方式定期查询这些端点获取最新状态
 
@@ -175,11 +288,11 @@ if __name__ == '__main__':
         window = webview.create_window(
             title='多通道系统测试软件 v1.0.1',
             url=server_url,
-            width=1400,
-            height=900,
+            width=1200,
+            height=700,
             resizable=True,
             fullscreen=False,
-            min_size=(1200, 800)
+            min_size=(1100, 650)
         )
         
         logger.info("应用窗口已打开")

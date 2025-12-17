@@ -76,6 +76,9 @@ def setup_logger(name='system', log_dir='logs', max_bytes=10*1024*1024, backup_c
     logger = logging.getLogger(name)
     logger.setLevel(logging.DEBUG)
     
+    # 禁止传播到root logger，避免重复输出
+    logger.propagate = False
+    
     # 清除已有的handlers（避免重复）
     if logger.hasHandlers():
         logger.handlers.clear()

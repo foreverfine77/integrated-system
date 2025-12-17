@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { Wifi, WifiOff, RefreshCw } from 'lucide-react'
-import { matrixAPI, handleAPIError } from '../../services/api'
+import { matrixAPI } from '../../services/api'
+import { useAPICall } from '../../hooks/useAPICall'
+import { callAPI } from '../../services/apiWrapper'
 import { useApp } from '../../contexts/AppContext'
 import { useMatrix } from '../../contexts/MatrixContext'
 
@@ -10,80 +12,105 @@ import { useMatrix } from '../../contexts/MatrixContext'
 function DeviceConnection() {
   const { addLog } = useApp()
   const { isConnected, setIsConnected, selectedPort, setSelectedPort, setIsConnecting } = useMatrix()
+
+  // 使用useAPICall自动管理loading
+  const { isLoading, execute } = useAPICall()
+
   const [connectionType, setConnectionType] = useState('network')
   const [availablePorts, setAvailablePorts] = useState([])
-  const [loading, setLoading] = useState(false)
   const [baudRate, setBaudRate] = useState('115200')
   const [deviceIP, setDeviceIP] = useState('192.168.2.11')
   const [devicePort, setDevicePort] = useState('5025')
 
   const fetchPorts = async () => {
-    setLoading(true)
     try {
-      const response = await matrixAPI.getPorts()
-      setAvailablePorts(response.data.ports)
-      addLog(`发现 ${response.data.ports.length} 个可用端口`, 'success')
-    } catch (error) {
-      handleAPIError(error, addLog, 'matrix')
-    } finally {
-      setLoading(false)
+      await execute(
+        () => matrixAPI.getPorts(),
+        {
+          addLog,
+          source: 'matrix',
+          validateResponse: false,
+          onSuccess: (data) => {
+            setAvailablePorts(data.ports)
+            addLog(`发现 ${data.ports.length} 个可用端口`, 'success')
+          }
+        }
+      )
+    } catch {
+      // 错误已处理
     }
   }
 
   const handleConnect = async () => {
-    setLoading(true)
-    setIsConnecting(true)
-    try {
-      if (connectionType === 'network') {
-        if (!deviceIP || !devicePort) {
-          addLog('请输入设备IP和端口', 'warning')
-          setLoading(false)
-          return
-        }
-        const response = await matrixAPI.connect({ type: 'network', ip: deviceIP, port: parseInt(devicePort) })
-        if (response.data.success) {
-          setIsConnected(true)
-          addLog(`成功连接到 ${deviceIP}:${devicePort}`, 'success')
-          addLog(`使用TCP/IP网络连接`, 'info')
-        } else {
-          addLog(`连接失败，请检查设备连接`, 'error')
-        }
-      } else {
-        if (!selectedPort) {
-          addLog('请先选择一个端口', 'warning')
-          setLoading(false)
-          return
-        }
-        const response = await matrixAPI.connect({ type: 'serial', port: selectedPort, baudrate: parseInt(baudRate) })
-        if (response.data.success) {
-          setIsConnected(true)
-          addLog(`成功连接到 ${selectedPort}`, 'success')
-          addLog(`使用串口连接`, 'info')
-        } else {
-          addLog(`连接失败，请检查设备连接`, 'error')
-        }
+    if (connectionType === 'network') {
+      if (!deviceIP || !devicePort) {
+        addLog('请输入设备IP和端口', 'warning')
+        return
       }
-    } catch (error) {
-      handleAPIError(error, addLog, 'matrix')
-    } finally {
-      setLoading(false)
-      setIsConnecting(false)
+      setIsConnecting(true)
+      try {
+        await execute(
+          () => matrixAPI.connect({ type: 'network', ip: deviceIP, port: parseInt(devicePort) }),
+          {
+            successMessage: `成功连接到 ${deviceIP}:${devicePort}`,
+            addLog,
+            source: 'matrix',
+            onSuccess: () => {
+              setIsConnected(true)
+              addLog('使用TCP/IP网络连接', 'info')
+            }
+          }
+        )
+      } catch {
+        // 错误已处理
+      } finally {
+        setIsConnecting(false)
+      }
+    } else {
+      if (!selectedPort) {
+        addLog('请先选择一个端口', 'warning')
+        return
+      }
+      setIsConnecting(true)
+      try {
+        await execute(
+          () => matrixAPI.connect({ type: 'serial', port: selectedPort, baudrate: parseInt(baudRate) }),
+          {
+            successMessage: `成功连接到 ${selectedPort}`,
+            addLog,
+            source: 'matrix',
+            onSuccess: () => {
+              setIsConnected(true)
+              addLog('使用串口连接', 'info')
+            }
+          }
+        )
+      } catch {
+        // 错误已处理
+      } finally {
+        setIsConnecting(false)
+      }
     }
   }
 
   const handleDisconnect = async () => {
-    setLoading(true)
     setIsConnecting(true)
     try {
-      const response = await matrixAPI.disconnect()
-      if (response.data.success) {
-        setIsConnected(false)
-        addLog(`已断开连接`, 'info')
-      }
-    } catch (error) {
-      handleAPIError(error, addLog, 'matrix')
+      await callAPI(
+        () => matrixAPI.disconnect(),
+        {
+          successMessage: '已断开连接',
+          addLog,
+          source: 'matrix',
+          loadingSetter: (v) => { },
+          onSuccess: () => {
+            setIsConnected(false)
+          }
+        }
+      )
+    } catch {
+      // 错误已处理
     } finally {
-      setLoading(false)
       setIsConnecting(false)
     }
   }
@@ -102,10 +129,10 @@ function DeviceConnection() {
             设备连接
           </div>
         </h2>
-        <button onClick={fetchPorts} disabled={loading} className="p-2 rounded-lg transition-colors"
-          style={{ background: loading ? 'transparent' : 'var(--bg-secondary)', opacity: loading ? 0.5 : 1, cursor: loading ? 'not-allowed' : 'pointer' }}
+        <button onClick={fetchPorts} disabled={isLoading} className="p-2 rounded-lg transition-colors"
+          style={{ background: isLoading ? 'transparent' : 'var(--bg-secondary)', opacity: isLoading ? 0.5 : 1, cursor: isLoading ? 'not-allowed' : 'pointer' }}
           title="刷新端口列表">
-          <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} style={{ color: 'var(--text-tertiary)' }} />
+          <RefreshCw className={`w-5 h-5 ${isLoading ? 'animate-spin' : ''}`} style={{ color: 'var(--text-tertiary)' }} />
         </button>
       </div>
 
@@ -134,13 +161,13 @@ function DeviceConnection() {
           <>
             <div>
               <label style={{ display: 'block', fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>设备IP地址</label>
-              <input type="text" value={deviceIP} onChange={(e) => setDeviceIP(e.target.value)} disabled={isConnected || loading}
+              <input type="text" value={deviceIP} onChange={(e) => setDeviceIP(e.target.value)} disabled={isConnected || isLoading}
                 className="input-gold font-mono" placeholder="192.168.2.11" />
               <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', marginTop: '0.25rem' }}>默认: 192.168.2.11</p>
             </div>
             <div>
               <label style={{ display: 'block', fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>设备端口号</label>
-              <input type="number" value={devicePort} onChange={(e) => setDevicePort(e.target.value)} disabled={isConnected || loading}
+              <input type="number" value={devicePort} onChange={(e) => setDevicePort(e.target.value)} disabled={isConnected || isLoading}
                 className="input-gold font-mono" placeholder="5025" min="1" max="65535" />
               <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', marginTop: '0.25rem' }}>默认: 5025</p>
             </div>
@@ -149,14 +176,14 @@ function DeviceConnection() {
           <>
             <div>
               <label style={{ display: 'block', fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>选择串口 (COM Port)</label>
-              <select value={selectedPort} onChange={(e) => setSelectedPort(e.target.value)} disabled={isConnected || loading} className="select-gold w-full">
+              <select value={selectedPort} onChange={(e) => setSelectedPort(e.target.value)} disabled={isConnected || isLoading} className="select-gold w-full">
                 <option value="">-- 请选择端口 --</option>
                 {availablePorts.map(port => (<option key={port} value={port}>{port}</option>))}
               </select>
             </div>
             <div>
               <label style={{ display: 'block', fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>波特率 (Baud Rate)</label>
-              <select value={baudRate} onChange={(e) => setBaudRate(e.target.value)} disabled={isConnected || loading} className="select-gold w-full">
+              <select value={baudRate} onChange={(e) => setBaudRate(e.target.value)} disabled={isConnected || isLoading} className="select-gold w-full">
                 {['9600', '19200', '38400', '57600', '115200'].map(rate => (<option key={rate} value={rate}>{rate}</option>))}
               </select>
               <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', marginTop: '0.25rem' }}>建议使用 115200 bps</p>
@@ -166,15 +193,15 @@ function DeviceConnection() {
 
         {/* 连接/断开按钮 */}
         <button onClick={isConnected ? handleDisconnect : handleConnect}
-          disabled={loading || (!isConnected && connectionType === 'serial' && !selectedPort)}
+          disabled={isLoading || (!isConnected && connectionType === 'serial' && !selectedPort)}
           className="w-full py-3 rounded-lg font-medium transition-colors"
           style={{
             backgroundColor: isConnected ? 'var(--color-error)' : 'var(--matrix-primary)',
             color: '#FFF',
-            opacity: (loading || (!isConnected && connectionType === 'serial' && !selectedPort)) ? 0.5 : 1,
-            cursor: (loading || (!isConnected && connectionType === 'serial' && !selectedPort)) ? 'not-allowed' : 'pointer'
+            opacity: (isLoading || (!isConnected && connectionType === 'serial' && !selectedPort)) ? 0.5 : 1,
+            cursor: (isLoading || (!isConnected && connectionType === 'serial' && !selectedPort)) ? 'not-allowed' : 'pointer'
           }}>
-          {loading ? (
+          {isLoading ? (
             <span className="flex items-center justify-center gap-2">
               <RefreshCw className="w-4 h-4 animate-spin" />
               处理中...

@@ -4,6 +4,86 @@ echo ======================================================================
 echo 多通道系统测试软件 - EXE 打包脚本
 echo ======================================================================
 echo.
+echo 请选择打包模式:
+echo   [1] 完整打包（首次或依赖变更时使用）
+echo   [2] 快速更新（仅更新 EXE，依赖不变时使用）
+echo.
+set /p mode="请输入选项 (1 或 2): "
+
+if "%mode%"=="2" goto quick_build
+goto full_build
+
+:quick_build
+echo.
+echo ======================================================================
+echo 快速更新模式 - 仅重新编译 EXE
+echo ======================================================================
+echo.
+
+:: 检查 Python 环境
+python --version >nul 2>&1
+if %errorlevel% neq 0 (
+    echo [错误] 未找到 Python 环境
+    pause
+    exit /b 1
+)
+
+echo [步骤 1/3] 构建前端...
+cd frontend
+call npm run build
+if %errorlevel% neq 0 (
+    echo [错误] 前端构建失败
+    cd ..
+    pause
+    exit /b 1
+)
+cd ..
+echo [OK] 前端构建完成
+
+echo.
+echo [步骤 2/3] 复制前端到后端...
+xcopy "frontend\dist\" "backend\dist\" /E /I /Y >nul
+echo [OK] 前端文件已更新
+
+echo.
+echo [步骤 3/3] 重新打包 EXE...
+cd backend
+pyinstaller app_with_console.spec --clean > build_log1.txt 2>&1
+if %errorlevel% neq 0 (
+    echo [错误] 打包失败
+    powershell -Command "Get-Content build_log1.txt -Tail 10"
+    cd ..
+    pause
+    exit /b 1
+)
+cd ..
+echo [OK] EXE 打包完成
+
+:: 复制到 integrated_system 目录
+echo.
+echo [复制] 将 EXE 复制到项目根目录...
+if not exist "output\" mkdir "output"
+copy /Y "backend\dist\多通道测试系统_带终端\多通道测试系统_带终端.exe" "output\" >nul
+echo [OK] EXE 已复制到: output\多通道测试系统_带终端.exe
+
+echo.
+echo ======================================================================
+echo 快速更新完成！
+echo.
+echo 输出文件: output\多通道测试系统_带终端.exe
+echo.
+echo [提示] 只需将此 EXE 复制到目标电脑覆盖即可
+echo        （前提：目标电脑已有完整的 _internal 目录）
+echo ======================================================================
+pause
+exit /b 0
+
+:full_build
+echo.
+echo ======================================================================
+echo 完整打包模式
+echo ======================================================================
+echo.
 
 :: 检查 Python 环境
 python --version >nul 2>&1
@@ -119,22 +199,37 @@ if %errorlevel% neq 0 (
 echo [OK] 无终端版本打包完成
 
 echo.
-echo [步骤 8/8] 准备便携版打包...
-:: 复制使用说明到两个版本
+echo [步骤 8/8] 复制输出到项目根目录...
 cd ..
+
+:: 创建 output 目录
+if not exist "output\" mkdir "output"
+
+:: 复制完整的带终端版本
+if exist "output\多通道测试系统_带终端\" rmdir /s /q "output\多通道测试系统_带终端\"
+xcopy "backend\dist\多通道测试系统_带终端\" "output\多通道测试系统_带终端\" /E /I /Y >nul
+
+:: 复制完整的无终端版本
+if exist "output\多通道测试系统\" rmdir /s /q "output\多通道测试系统\"
+xcopy "backend\dist\多通道测试系统\" "output\多通道测试系统\" /E /I /Y >nul
+
+:: 复制使用说明
 if exist "使用说明.txt" (
-    copy /Y "使用说明.txt" "backend\dist\多通道测试系统_带终端\" >nul
-    copy /Y "使用说明.txt" "backend\dist\多通道测试系统\" >nul
+    copy /Y "使用说明.txt" "output\多通道测试系统_带终端\" >nul
+    copy /Y "使用说明.txt" "output\多通道测试系统\" >nul
     echo [OK] 使用说明已添加
 )
 
 echo.
 echo ======================================================================
 echo 打包完成！
-echo 生成的文件位于:
-echo   backend\dist\多通道测试系统_带终端\  (带终端版，可查看日志)
-echo   backend\dist\多通道测试系统\        (无终端版，适合最终用户)
 echo.
-echo [下一步] 运行 create_portable.bat 创建便携 ZIP 包，便于分发
+echo 输出目录: output\
+echo   ├─ 多通道测试系统_带终端\  (带终端版，可查看日志)
+echo   └─ 多通道测试系统\        (无终端版，适合最终用户)
+echo.
+echo [下一步] 
+echo   - 首次部署: 复制整个文件夹到目标电脑
+echo   - 后续更新: 运行此脚本选择模式 2，只复制 EXE 文件
 echo ======================================================================
 pause

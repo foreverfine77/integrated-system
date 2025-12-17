@@ -16,7 +16,7 @@ function VNAMeasurementSettings() {
     const tabs = [
         { id: 'basic', label: '基本参数', description: 'S参数测量' },
         { id: 'mixer', label: '混频器测量', description: 'SC参数+配置' },
-        { id: 'power', label: '功率测量', description: '暂不可用' }
+        { id: 'power', label: '功率测量', description: 'Ipwr/Opwr' }
     ]
 
     // 从localStorage恢复上次选择的Tab

@@ -53,7 +53,6 @@ backend/build/
 backend/dist/
 backend/mainapp/
 backend/build_log*.txt
-*.spec
 
 # Node modules
 frontend/node_modules/

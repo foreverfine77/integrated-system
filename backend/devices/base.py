@@ -46,7 +46,11 @@ class NetworkAnalyzerBase(ABC):
             (success, message) 元组
         """
         try:
-            logger.info(f"尝试连接设备: {self.resource_name}")
+            # 提取IP地址用于日志显示
+            ip_match = re.search(r'TCPIP[0-9]*::([^:]+)', self.resource_name)
+            ip_display = ip_match.group(1) if ip_match else "设备"
+            
+            logger.info(f"Connecting to {ip_display}...")
             
             # 尝试不同的VISA资源格式
             resource_formats = [
@@ -69,14 +73,14 @@ class NetworkAnalyzerBase(ABC):
             
             for idx, resource_format in enumerate(unique_formats, 1):
                 try:
-                    logger.info(f"尝试资源格式 {idx}/{len(unique_formats)}: {resource_format}")
+                    logger.info(f"[格式 {idx}/{len(unique_formats)}] {resource_format}")
                     self.instrument = self._open_resource(resource_format)
                     self.instrument.timeout = self.timeout
                     
                     # 测试连接
-                    logger.info("发送 *IDN? 命令测试连接")
+                    logger.debug("Querying device ID (*IDN?)")
                     self.idn = self.query('*IDN?')
-                    logger.info(f"设备响应: {self.idn}")
+                    logger.debug(f"Device response: {self.idn}")
                     
                     self.connected = True
                     self.resource_name = resource_format  # 更新为成功的格式
@@ -84,11 +88,11 @@ class NetworkAnalyzerBase(ABC):
                     # 设备特定的初始化
                     self.initialize()
                     
-                    logger.info(f"[成功] 设备连接成功")
+                    logger.info(f"[成功] Connected to {ip_display}")
                     return True, f"设备连接成功"
                     
                 except Exception as e:
-                    logger.error(f"资源格式 {resource_format} 连接失败: {e}")
+                    logger.debug(f"Format {resource_format} failed: {e}")
                     if self.instrument:
                         try:
                             self.instrument.close()
@@ -101,7 +105,7 @@ class NetworkAnalyzerBase(ABC):
                         continue
             
             # 如果所有VISA格式都失败，尝试直接TCP连接
-            logger.info("VISA连接失败，尝试直接TCP连接")
+            logger.debug("All VISA formats failed, trying direct TCP connection")
             return self._try_direct_tcp_connection()
             
         except Exception as e:
@@ -142,13 +146,13 @@ class NetworkAnalyzerBase(ABC):
                 # 如果端口是 "inst0" 或 "INST" 这样的字符串，使用默认端口 5025
                 if not port_str.isdigit():
                     port = 5025
-                    logger.info(f"端口格式非数字 ({port_str})，使用默认端口: {port}")
+                    logger.debug(f"Using default port {port} (original: {port_str})")
                 else:
                     port = int(port_str)
             except:
                 port = 5025
             
-            logger.info(f"尝试TCP直连: {ip}:{port}")
+            logger.debug(f"Attempting TCP connection to {ip}:{port}")
             
             # 创建TCP连接（使用较短超时，快速检测失败）
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -156,10 +160,9 @@ class NetworkAnalyzerBase(ABC):
             sock.connect((ip, port))
             
             # 端口连接成功，但还需要验证设备
-            logger.info(f"端口 {port} 已响应，正在验证设备...")
+            logger.debug(f"Port {port} connected, verifying device...")
             
             # 发送*IDN?命令测试（使用较短超时）
-            logger.info(f"发送 *IDN? 命令")
             sock.send(b"*IDN?\n")
             
             # 设置接收超时为5秒（给设备足够时间响应）
@@ -168,10 +171,10 @@ class NetworkAnalyzerBase(ABC):
             
             if not response:
                 sock.close()
-                logger.error(f"端口已开放但设备无响应")
+                logger.error(f"Port {port} open but no device response")
                 return False, f"端口{port}开放但无设备响应，可能是其他服务或网络设备"
             
-            logger.info(f"设备响应: {response}")
+            logger.debug(f"Device response: {response}")
             
             # 验证设备响应
             if self.validate_idn_response(response):
@@ -185,22 +188,39 @@ class NetworkAnalyzerBase(ABC):
                 # 调用设备初始化
                 self.initialize()
                 
-                logger.info(f"[成功] TCP直连成功")
+                logger.info(f"[成功] Connected to {ip} via TCP")
                 return True, f"TCP连接成功"
             else:
                 sock.close()
-                logger.error(f"设备响应格式不正确: {response}")
+                logger.error(f"Invalid device response: {response}")
                 return False, f"端口响应异常，可能不是VNA设备"
                 
         except socket.timeout:
-            logger.error(f"连接超时，请检查：1) 设备是否开机 2) IP地址是否正确 3) 网络是否连通")
-            return False, f"连接超时，设备可能未开机或IP不正确"
+            logger.error("Connection timeout")
+            return False, "网络连接失败"
         except ConnectionRefusedError:
-            logger.error(f"连接被拒绝，端口{port}未开放")
-            return False, f"连接被拒绝，请检查设备IP和端口"
+            logger.error(f"Connection refused on port {port}")
+            return False, "网络连接失败"
+        except OSError as e:
+            # Windows网络错误（如WinError 10051）
+            error_code = getattr(e, 'winerror', None) or getattr(e, 'errno', None)
+            
+            # 针对常见Windows错误码提供友好提示
+            if error_code == 10051:  # 网络不可达
+                logger.error(f"Network unreachable (WinError {error_code})")
+                return False, "网络连接失败"
+            elif error_code == 10060:  # 连接超时
+                logger.error(f"Connection timeout (WinError {error_code})")
+                return False, "网络连接失败"
+            elif error_code == 10061:  # 连接被拒绝
+                logger.error(f"Connection refused (WinError {error_code})")
+                return False, "网络连接失败"
+            else:
+                logger.error(f"Network error (code {error_code}): {str(e)}")
+                return False, "网络连接失败"
         except Exception as e:
-            logger.error(f"TCP连接失败: {str(e)}")
-            return False, f"TCP连接失败: {str(e)}"
+            logger.error(f"TCP connection failed: {str(e)}")
+            return False, "设备连接失败，请检查IP地址和端口设置"
     
     @abstractmethod
     def validate_idn_response(self, response: str) -> bool:
@@ -311,16 +331,31 @@ class NetworkAnalyzerBase(ABC):
                         if '\n' in chunk:
                             break
                             
-                    except socket.timeout:
+                    except socket.timeout as e:
                         # 超时，检查是否已经接收到数据
                         if response_parts:
                             # 已接收到数据，认为接收完成
+                            logger.debug(f"Socket超时但已接收到数据: {total_bytes}字节, {chunk_count}个chunk")
                             break
                         elif chunk_count == 0:
                             # 第一个chunk就超时，真正的超时错误
-                            raise TimeoutError("等待设备响应超时")
+                            # 提供详细的诊断信息
+                            error_details = (
+                                f"[网络超时错误] 设备未响应查询命令\n"
+                                f"命令: {command.strip()}\n"
+                                f"超时时间: {timeout if timeout else '默认'}秒\n"
+                                f"已接收数据: {total_bytes} 字节 ({chunk_count} 个数据块)\n"
+                                f"设备地址: {self.resource_name}\n"
+                            )
+                            logger.error(error_details)
+                            raise TimeoutError(
+                                f"设备响应超时 - 命令: {command.strip()} | "
+                                f"超时: {timeout if timeout else '默认'}秒 | "
+                                f"已接收: {total_bytes}字节"
+                            )
                         else:
                             # 中间超时，可能数据已接收完毕
+                            logger.debug(f"数据接收中途超时，已接收: {total_bytes}字节, {chunk_count}个chunk")
                             break
                 
                 response = ''.join(response_parts).strip()

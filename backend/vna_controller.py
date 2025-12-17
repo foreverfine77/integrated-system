@@ -155,7 +155,6 @@ class VNAController:
                 raise ValueError(f"未知的设备类型: {device_type}")
             
             # 尝试连接设备
-            logger.info(f"[连接] 尝试连接到: {resource_name}")
             success, message = self.device_driver.connect()  
             
             if not success:
@@ -163,7 +162,7 @@ class VNAController:
                 self.device_driver = None
                 return jsonify({
                     'success': False,
-                    'message': f'设备连接失败: {message}'
+                    'message': message  # 直接使用设备驱动返回的友好消息
                 }), 400
             
             # 连接成功

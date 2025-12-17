@@ -429,40 +429,25 @@ class RohdeZNA26(NetworkAnalyzerBase):
             print(f"  [解析] 解析到 {len(data)} 个数值")
             
             # 数据完整性检查
-            if param not in ['IPWR', 'OPWR', 'REVIPWR', 'REVOPWR']:
-                expected_count = len(frequencies) * 2  # S参数需要实部+虚部
-                if len(data) != expected_count:
-                    print(f"  [警告] 数据不完整！期望{expected_count}个数值，实际{len(data)}个")
-                    print(f"  [警告] 可能TCP缓冲区不足或数据被截断")
+            if len(data) != len(frequencies):
+                print(f"  [警告] 数据点数({len(data)})与频率点数({len(frequencies)})不一致!")
             
-            # 根据参数类型解析数据
-            if param in ['IPWR', 'OPWR', 'REVIPWR', 'REVOPWR']:
-                # 功率数据：FDATA返回的是实际功率值（dBm）
-                magnitude = data
-                print(f"  [数据] 功率点数: {len(magnitude)}")
-                print(f"  [范围] 功率范围: {magnitude.min():.2f} ~ {magnitude.max():.2f} dBm")
-                phase = None
-            else:
-                # S参数：FDATA返回的是实部和虚部
-                # 实部在偶数位，虚部在奇数位
-                real = data[::2]
-                imag = data[1::2]
-                print(f"  [数据] 实部: {len(real)} 个点")
-                print(f"  [数据] 虚部: {len(imag)} 个点")
-                
-                # 转换为幅度和相位
-                magnitude = [20 * math.log10(math.sqrt(r**2 + i**2)) for r, i in zip(real, imag)]
-                phase = [math.degrees(math.atan2(i, r)) for r, i in zip(real, imag)]
+            # 解析数据
+            # ⚠️ 重要：FDATA 返回的是格式化后的数据（dB 幅度），不是实部虚部！
+            magnitude = data
+            phase = None  # FDATA 不包含相位信息，如需相位请使用 SDATA
+            
+            print(f"  [数据] 幅度点数: {len(magnitude)}")
+            if len(magnitude) > 0:
                 print(f"  [范围] 幅度范围: {min(magnitude):.2f} ~ {max(magnitude):.2f} dB")
-                print(f"  [范围] 相位范围: {min(phase):.2f} ~ {max(phase):.2f} °")
             
             print(f"\n[成功] 测量完成 - {param} 数据获取成功")
             print(f"{'='*70}\n")
             
             return {
                 'frequencies': frequencies,
-                'magnitude': magnitude if isinstance(magnitude, list) else list(magnitude),
-                'phase': phase if isinstance(phase, list) else list(phase) if phase is not None else None
+                'magnitude': magnitude,
+                'phase': phase
             }, "数据获取成功"
             
         except Exception as e:
@@ -510,39 +495,41 @@ class RohdeZNA26(NetworkAnalyzerBase):
         self.write("INIT:IMM")
     
     def wait_for_sweep(self):
-        """等待扫描完成"""
+        """等待扫描完成
+        
+        超时处理策略：
+        - 连续3次超时后直接失败
+        - 给出简洁中文提示
+        """
         self.write("*WAI")
-        # 查询操作完成状态
         import time
-        max_wait = 180  # 最多等待180秒（3分钟）
-        query_timeout = 30  # 每次查询30秒超时（增加到30秒）
-        retry_interval = 1.0  # 重试间隔1秒
-        start_time = time.time()
         
-        print(f"  [等待] 最大等待时间: {max_wait}秒, 查询超时: {query_timeout}秒")
+        max_retries = 3  # 最多重试3次
+        query_timeout = 30  # 每次查询30秒超时（罗德设备需要更长时间）
+        retry_count = 0
         
-        while True:
+        while retry_count < max_retries:
             try:
                 opc = int(self.query("*OPC?", timeout=query_timeout))
                 if opc == 1:
-                    elapsed = time.time() - start_time
-                    print(f"  [完成] 测量完成，耗时: {elapsed:.1f}秒")
-                    break
+                    print(f"  [完成] 扫描完成")
+                    return  # 成功
             except Exception as e:
-                elapsed = time.time() - start_time
                 error_str = str(e)
+                retry_count += 1
                 
-                # 检查是否是超时错误
-                if "TMO" in error_str or "Timeout" in error_str:
-                    print(f"  [超时] 查询超时({elapsed:.1f}s)，继续等待...")
+                # 区分不同类型的错误
+                if "IO" in error_str or "I/O" in error_str:
+                    print(f"  [连接中断] 设备网络连接已断开")
+                    raise Exception("设备连接已断开，请检查网线或设备电源")
+                elif "TMO" in error_str or "Timeout" in error_str:
+                    print(f"  [超时] 等待设备响应... ({retry_count}/{max_retries})")
                 else:
-                    print(f"  [警告] 等待测量时出现异常: {e}")
+                    print(f"  [异常] {error_str}")
+                    raise Exception(f"测量异常: {error_str}")
             
-            # 检查是否超过最大等待时间
-            if time.time() - start_time > max_wait:
-                print(f"  [警告] 等待测量超时（{max_wait}秒），继续尝试获取数据")
-                break
-            
-            # 短暂休息再查询
-            time.sleep(retry_interval)
+            time.sleep(1.0)
+        
+        # 超过重试次数，直接失败
+        raise Exception("扫描超时：设备未响应，请检查矢网是否正在扫描")
 

@@ -13,7 +13,7 @@ function VNAMeasurement({ onStart, onStop, onExport }) {
         stopFrequency, setStopFrequency
     } = useVNA()
 
-    const pointOptions = [201, 401, 801, 1001]
+    const pointOptions = [101, 201, 401, 801, 1001]
 
     return (
         <div className="card-vna">

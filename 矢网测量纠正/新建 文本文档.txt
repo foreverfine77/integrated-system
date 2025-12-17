@@ -1,0 +1,320 @@
+09:52:51 - INFO - 会话启动 [20251217_095251]
+09:52:51 - INFO - 多通道系统测试软件 v1.0.1 启动
+09:52:52 - INFO - 后端服务启动 http://127.0.0.1:5000
+09:52:53 - INFO - 应用窗口已打开
+09:53:00 - INFO - 获取端口列表成功: 4 个端口
+09:53:45 - INFO - 尝试连接设备: siyi-3674l @ 192.168.1.110:5025
+09:53:45 - INFO - [OK] 创建思仪3674L设备驱动实例
+09:53:45 - INFO - [格式] 使用思仪标准VISA格式: TCPIP::192.168.1.110::inst0::INSTR
+09:53:45 - INFO - Connecting to 192.168.1.110...
+09:53:45 - INFO - [格式 1/2] TCPIP::192.168.1.110::inst0::INSTR
+[SCPI] 设置IF带宽
+  >> :SENS:BAND 1000
+[SCPI] 设置源功率
+  >> :SOUR:POW -10
+[成功] 思仪 3674L 设备初始化完成
+09:53:45 - INFO - [成功] Connected to 192.168.1.110
+09:53:45 - INFO - [成功] 设备连接成功: siyi-3674l
+09:53:45 - INFO - [信息] 设备信息: 设备连接成功
+09:54:04 - INFO - 开始测量任务: 1个参数, 每个5次
+09:54:04 - INFO - 使用软件循环模式 - 每次单独测量并保存原始数据
+09:54:04 - INFO -
+============================================================
+09:54:04 - INFO - 参数 1/1: S12
+09:54:04 - INFO - ============================================================
+
+[SCPI] 设置频率范围
+  >> :SENS:FREQ:STAR 500000000.0
+  >> :SENS:FREQ:STOP 2500000000.0
+  >> :SENS:SWE:POIN 201
+09:54:04 - INFO -
+[S12] 第 1/5 次测量
+
+======================================================================
+[测量] 思仪3674L - 开始测量
+  参数: S12
+  频点数: 201
+  测量次数: 1
+  设备连接状态: True
+======================================================================
+
+[SCPI] 删除旧轨迹
+  >> :CALC:PAR:DEL:ALL
+[SCPI] 配置标准S参数测量
+  >> :CALC1:PAR:DEF:EXT 'Trc_S12', 'S12'
+  >> :DISP:WIND1:TRAC1:FEED 'Trc_S12'
+  >> :CALC1:PAR:SEL 'Trc_S12'
+
+[SCPI] 检查设备错误
+  [OK] 无错误
+
+[SCPI] 触发单次扫描
+  >> :SENS1:SWE:MODE SING
+[SCPI] 等待测量完成
+  >> *OPC?
+  [警告] 等待测量时出现异常: VI_ERROR_TMO (-1073807339): Timeout expired before operation completed.
+  [警告] 等待测量时出现异常: VI_ERROR_TMO (-1073807339): Timeout expired before operation completed.
+  [警告] 等待测量时出现异常: VI_ERROR_TMO (-1073807339): Timeout expired before operation completed.
+  [警告] 等待测量时出现异常: VI_ERROR_TMO (-1073807339): Timeout expired before operation completed.
+  [警告] 等待测量时出现异常: VI_ERROR_TMO (-1073807339): Timeout expired before operation completed.
+  [警告] 等待测量时出现异常: VI_ERROR_TMO (-1073807339): Timeout expired before operation completed.
+  [警告] 等待测量时出现异常: VI_ERROR_TMO (-1073807339): Timeout expired before operation completed.
+  [警告] 等待测量时出现异常: VI_ERROR_TMO (-1073807339): Timeout expired before operation completed.
+  [警告] 等待测量时出现异常: VI_ERROR_TMO (-1073807339): Timeout expired before operation completed.
+  [警告] 等待测量时出现异常: VI_ERROR_TMO (-1073807339): Timeout expired before operation completed.
+  [警告] 等待测量时出现异常: VI_ERROR_TMO (-1073807339): Timeout expired before operation completed.
+  [警告] 等待测量时出现异常: VI_ERROR_TMO (-1073807339): Timeout expired before operation completed.
+  [警告] 等待测量超时（120秒），继续尝试获取数据
+
+[SCPI] 获取频率数据
+  >> :CALC:X? (思仪3674L使用X轴命令)
+  [超时] 数据查询超时设置: 30秒
+
+[错误] 测量失败 - 异常: VI_ERROR_TMO (-1073807339): Timeout expired before operation completed.
+======================================================================
+
+Traceback (most recent call last):
+  File "devices\siyi.py", line 203, in get_measurement_data
+  File "devices\base.py", line 382, in query
+  File "pyvisa\resources\messagebased.py", line 647, in query
+  File "pyvisa\resources\messagebased.py", line 485, in read
+  File "pyvisa\resources\messagebased.py", line 441, in _read_raw
+  File "pyvisa\ctwrapper\functions.py", line 2336, in read
+  File "pyvisa\ctwrapper\highlevel.py", line 226, in _return_handler
+  File "pyvisa\highlevel.py", line 251, in handle_return_value
+pyvisa.errors.VisaIOError: VI_ERROR_TMO (-1073807339): Timeout expired before operation completed.
+09:56:40 - ERROR - [错误] 第 1 次测量失败: 获取数据失败: VI_ERROR_TMO (-1073807339): Timeout expired before operation completed.
+09:56:40 - INFO -
+所有测量完成
+09:56:40 - INFO - 共测量 1 个参数，每个5次单独测量
+09:56:40 - INFO - 总计 0 次测量
+09:56:47 - INFO - 开始测量任务: 1个参数, 每个5次
+09:56:47 - INFO - 使用软件循环模式 - 每次单独测量并保存原始数据
+09:56:47 - INFO -
+============================================================
+09:56:47 - INFO - 参数 1/1: S11
+09:56:47 - INFO - ============================================================
+
+[SCPI] 设置频率范围
+  >> :SENS:FREQ:STAR 500000000.0
+  >> :SENS:FREQ:STOP 2500000000.0
+  >> :SENS:SWE:POIN 201
+09:56:47 - INFO -
+[S11] 第 1/5 次测量
+
+======================================================================
+[测量] 思仪3674L - 开始测量
+  参数: S11
+  频点数: 201
+  测量次数: 1
+  设备连接状态: True
+======================================================================
+
+[SCPI] 删除旧轨迹
+  >> :CALC:PAR:DEL:ALL
+[SCPI] 配置标准S参数测量
+  >> :CALC1:PAR:DEF:EXT 'Trc_S11', 'S11'
+  >> :DISP:WIND1:TRAC1:FEED 'Trc_S11'
+  >> :CALC1:PAR:SEL 'Trc_S11'
+
+[SCPI] 检查设备错误
+  [警告] 设备报告错误: [-1] 获取错误状态失败: VI_ERROR_TMO (-1073807339): Timeout expired before operation completed.
+
+[SCPI] 触发单次扫描
+  >> :SENS1:SWE:MODE SING
+[SCPI] 等待测量完成
+  >> *OPC?
+  [警告] 等待测量时出现异常: VI_ERROR_TMO (-1073807339): Timeout expired before operation completed.
+  [警告] 等待测量时出现异常: VI_ERROR_TMO (-1073807339): Timeout expired before operation completed.
+09:57:20 - INFO - 开始测量任务: 1个参数, 每个5次
+09:57:20 - INFO - 使用软件循环模式 - 每次单独测量并保存原始数据
+09:57:20 - INFO -
+============================================================
+09:57:20 - INFO - 参数 1/1: S11
+09:57:20 - INFO - ============================================================
+
+[SCPI] 设置频率范围
+  >> :SENS:FREQ:STAR 500000000.0
+  >> :SENS:FREQ:STOP 2500000000.0
+  [警告] 等待测量时出现异常: VI_ERROR_TMO (-1073807339): Timeout expired before operation completed.
+  >> :SENS:SWE:POIN 201
+09:57:28 - INFO - 测量已停止
+09:57:28 - INFO -
+所有测量完成
+09:57:28 - INFO - 共测量 1 个参数，每个5次单独测量
+09:57:28 - INFO - 总计 0 次测量
+  [警告] 等待测量时出现异常: VI_ERROR_TMO (-1073807339): Timeout expired before operation completed.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量时出现异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+  [警告] 等待测量超时（120秒），继续尝试获取数据
+
+[SCPI] 获取频率数据
+  >> :CALC:X? (思仪3674L使用X轴命令)
+  [超时] 数据查询超时设置: 30秒
+
+[错误] 测量失败 - 异常: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+======================================================================
+
+Traceback (most recent call last):
+  File "devices\siyi.py", line 203, in get_measurement_data
+  File "devices\base.py", line 382, in query
+  File "pyvisa\resources\messagebased.py", line 641, in query
+  File "pyvisa\resources\messagebased.py", line 196, in write
+  File "pyvisa\resources\messagebased.py", line 156, in write_raw
+  File "pyvisa\ctwrapper\functions.py", line 2795, in write
+  File "pyvisa\ctwrapper\highlevel.py", line 226, in _return_handler
+  File "pyvisa\highlevel.py", line 251, in handle_return_value
+pyvisa.errors.VisaIOError: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+09:58:57 - ERROR - [错误] 第 1 次测量失败: 获取数据失败: VI_ERROR_IO (-1073807298): Could not perform operation because of I/O error.
+09:58:57 - INFO -
+所有测量完成
+09:58:57 - INFO - 共测量 1 个参数，每个5次单独测量
+09:58:57 - INFO - 总计 0 次测量
+09:58:57 - INFO - 断开VNA设备连接
+09:58:57 - INFO - [OK] 设备驱动已断开
+Exception ignored in: <function Resource.__del__ at 0x000001C2000EB1F0>
+Traceback (most recent call last):
+  File "pyvisa\resources\resource.py", line 179, in __del__
+  File "pyvisa\resources\resource.py", line 317, in close
+  File "pyvisa\resources\resource.py", line 311, in before_close
+  File "pyvisa\resources\resource.py", line 329, in __switch_events_off
+  File "pyvisa\resources\resource.py", line 479, in disable_event
+  File "pyvisa\ctwrapper\functions.py", line 662, in disable_event
+  File "pyvisa\ctwrapper\highlevel.py", line 226, in _return_handler
+  File "pyvisa\highlevel.py", line 251, in handle_return_value
+pyvisa.errors.VisaIOError: VI_ERROR_INV_OBJECT (-1073807346): The given session or object reference is invalid.
